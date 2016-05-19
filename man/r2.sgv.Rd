@@ -4,9 +4,9 @@
 \alias{r2.sgv}
 \title{Computes R squared statistic for a generalized linear mixed model using
 penalized quasi likelihood (PQL) estimation and standardized generalized
-variance (SGV)}
+variance (SGV).}
 \usage{
-r2.sgv(model, data, adj = F)
+r2.sgv(model, data, adj = T)
 }
 \arguments{
 \item{model}{a fitted mixed model (lmerMod or lme object)}
@@ -20,15 +20,16 @@ The R squared statistic and adjusted R squared based on SGV
         for \code{model}.
 }
 \description{
-Computes R squared statistic for a generalized linear mixed model using
-penalized quasi likelihood (PQL) estimation and standardized generalized
-variance (SGV)
+Currently implemented for linear mixed models with
+\code{\link{lmerTest::merMod}} and \code{\link{nlme::lme}} objects. For
+generalized linear mixed models, only \code{\link{MASS::glmmPQL}} objects
+are compatible.
 }
 \examples{
 
 library(nlme)
 m = lme(distance ~ age*Sex, random = ~1|Subject, data = Orthodont)
-r2.sgv(m)
+r2.sgv(m, data = Orthodont)
 
 library(MASS)
 PQL_mod = glmmPQL(y ~ trt + I(week > 2), random = ~ 1 | ID,

@@ -9,7 +9,8 @@ r2beta(model, partial = F, ddf = "kr")
 \arguments{
 \item{model}{a fitted lmerMod object}
 
-\item{partial}{if TRUE, semi-partial R squared are calculated for each fixed effect in the mixed model.}
+\item{partial}{if TRUE, semi-partial R squared are calculated for each
+fixed effect in the mixed model.}
 
 \item{ddf}{Approximation method for the denominator degrees of freedom
 if ddf = 'res' then residual degrees of freedom are used
@@ -27,7 +28,7 @@ Computes R^2 statistic from edwards et al., 2008.
 \examples{
 library(nlme)
 library(lme4)
-m = lmer(distance ~ age*Sex+ (1|Subject), data = Orthodont)
+m = lmer(distance ~ age*Sex + (1|Subject), data = Orthodont)
 r2beta(m, partial = T, ddf = 'kr')
 }
 

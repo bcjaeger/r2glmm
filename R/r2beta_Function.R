@@ -2,7 +2,8 @@
 #' Computes R^2 statistic from edwards et al., 2008.
 #'
 #' @param model a fitted lmerMod object
-#' @param partial  if TRUE, semi-partial R squared are calculated for each fixed effect in the mixed model.
+#' @param partial  if TRUE, semi-partial R squared are calculated for each
+#' fixed effect in the mixed model.
 #' @param ddf Approximation method for the denominator degrees of freedom
 #'            if ddf = 'res' then residual degrees of freedom are used
 #'            if ddf = 'kr', then the Kenward Roger approach is applied.
@@ -13,11 +14,16 @@
 #' @examples
 #' library(nlme)
 #' library(lme4)
-#' m = lmer(distance ~ age*Sex+ (1|Subject), data = Orthodont)
+#' m = lmer(distance ~ age*Sex + (1|Subject), data = Orthodont)
 #' r2beta(m, partial = T, ddf = 'kr')
 #' @export r2beta
 
 r2beta <- function(model, partial = F, ddf = 'kr'){
+
+  if(!require("stats")) stop("package 'stats' is essential")
+  if(!require("afex")) stop("package 'afex' is essential")
+  if(!require("pbkrtest")) stop("package 'pbkrtest' is essential")
+  if(!require("dplyr")) stop("package 'dplyr' is essential")
 
   ### If the model has no random effects (i.e. a linear model)
 
@@ -40,7 +46,7 @@ r2beta <- function(model, partial = F, ddf = 'kr'){
   # Null model formula:
   # same covariance structure with fixed effects removed except the intercept
 
-  null.form <- as.formula(paste('. ~ 1 +', random))
+  null.form <- stats::as.formula(paste('. ~ 1 +', random))
 
   ### Compute Kenward Roger approximate F test using null model defined above
 
@@ -88,7 +94,7 @@ r2beta <- function(model, partial = F, ddf = 'kr'){
     # Get model matrices
     X = stats::model.matrix(model)
     n <- nrow(X)
-    Z = getME(model, 'Z')
+    Z = as.matrix(getME(model, 'Z'))
 
     # C matrix defines the Wald Test for Fixed Effects
     C = list(); nms = c('Model', names(beta)[-1])

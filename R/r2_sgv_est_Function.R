@@ -51,8 +51,13 @@ calc.sgv <- function(nblocks, blk.sizes, vmat){
 
 #' Computes R squared statistic for a generalized linear mixed model using
 #' penalized quasi likelihood (PQL) estimation and standardized generalized
-#' variance (SGV)
-#
+#' variance (SGV).
+#'
+#' Currently implemented for linear mixed models with
+#' \code{\link{lmerTest::merMod}} and \code{\link{nlme::lme}} objects. For
+#' generalized linear mixed models, only \code{\link{MASS::glmmPQL}} objects
+#' are compatible.
+#'
 #' @param model a fitted mixed model (lmerMod or lme object)
 #' @param adj if TRUE, an adjusted R squared for model selection is provided.
 #' @param data the dataframe used to fit the mixed model.
@@ -62,7 +67,7 @@ calc.sgv <- function(nblocks, blk.sizes, vmat){
 #'
 #' library(nlme)
 #' m = lme(distance ~ age*Sex, random = ~1|Subject, data = Orthodont)
-#' r2.sgv(m)
+#' r2.sgv(m, data = Orthodont)
 #'
 #' library(MASS)
 #' PQL_mod = glmmPQL(y ~ trt + I(week > 2), random = ~ 1 | ID,
@@ -71,7 +76,11 @@ calc.sgv <- function(nblocks, blk.sizes, vmat){
 #' @export r2.sgv
 #'
 
-r2.sgv <- function(model, data, adj = F){
+r2.sgv <- function(model, data, adj = T){
+
+  if(!require("Matrix")) stop("package 'Matrix' is essential")
+  if(!require("mgcv")) stop("package 'mgcv' is essential")
+  if(!require("AICcmodavg")) stop("package 'AICcmodavg' is essential")
 
   # Get fixed effects
   beta = fixef(model)
@@ -82,7 +91,7 @@ r2.sgv <- function(model, data, adj = F){
 
   if(any(c('merModLmerTest', 'lmerMod') %in% class(model))){
 
-    Z = as.matrix(getME(model, 'Z'))
+    Z = as.matrix(lme4::getME(model, 'Z'))
     G.list = N = num.clusters = list()
 
     for(part in names(model@flist)){
@@ -100,7 +109,7 @@ r2.sgv <- function(model, data, adj = F){
     }
 
     # Stacked (diagonal) random effects covariance matrix
-    G = as.matrix(bdiag(G.list))
+    G = as.matrix(Matrix::bdiag(G.list))
 
     # Covariance Matrix from the model
     v.y = Z%*%G%*%t(Z) + sigma(model)^2*diag(nrow(Z))
@@ -119,8 +128,6 @@ r2.sgv <- function(model, data, adj = F){
     obspersub = as.numeric(table(model$data[,cluster.name]))
     nsubs = length(obspersub)
 
-    require(mgcv)
-
     SGV = calc.sgv(nblocks = nsubs, blk.sizes = obspersub,
       vmat = bdiag(extract.lme.cov2(model, model$data, start.level=1)[['V']]))
   }
@@ -133,10 +140,8 @@ r2.sgv <- function(model, data, adj = F){
 
   if(adj==T){
 
-    # load AICc package to count the number of parameters in the model
-    require(AICcmodavg)
 
-    nprms = AICc(model, return.K = T)
+    nprms = AICcmodavg::AICc(model, return.K = T)
     const = n / (mean(obspersub))
     r2adj = 1 - (1 - r2) * (const-1) / (const - nprms - 1)
     r2 = c('r2sgv' = r2, 'r2sgv.adj' = r2adj)
