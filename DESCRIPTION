@@ -1,0 +1,26 @@
+Package: r2glmm
+Type: Package
+Title: Computes various R^2 statistics for LMMs and GLMMs
+Version: 0.1.0
+Authors@R: person("Byron", "Jaeger", email = "byron.jaeger@gmail.com", role = c("aut", "cre"))
+Description: This package contains functions to compute R squared for the
+    linear and generalized linear mixed model (LMM and GLMM).
+    The R squared measure from Edwards et.al (2008) using the Kenward Roger
+    approach or the residual degrees of freedom is computed for the LMM
+    and R^2_{sgv} is computed for GLMMs using
+    Penalized Quasi Likelihood (PQL) Estimation.
+Imports:
+    mgcv,
+    lmerTest,
+    AICcmodavg,
+    pbkrtest,
+    afex,
+    dplyr
+Suggests:
+    lme4,
+    nlme,
+    MASS,
+    testthat
+License: GPL-2
+LazyData: TRUE
+RoxygenNote: 5.0.1
