@@ -2,12 +2,14 @@
 % Please edit documentation in R/r2beta_Function.R
 \name{r2beta}
 \alias{r2beta}
-\title{Computes R^2 statistic from edwards et al., 2008.}
+\title{Computes coefficient of determination (r squared) from edwards et al., 2008.}
 \usage{
-r2beta(model, partial = F, ddf = "kr")
+r2beta(model, data = NULL, partial = F, ddf = "res", NS.adj = F)
 }
 \arguments{
 \item{model}{a fitted lmerMod object}
+
+\item{data}{the data used for the fitted model.}
 
 \item{partial}{if TRUE, semi-partial R squared are calculated for each
 fixed effect in the mixed model.}
@@ -15,6 +17,9 @@ fixed effect in the mixed model.}
 \item{ddf}{Approximation method for the denominator degrees of freedom
 if ddf = 'res' then residual degrees of freedom are used
 if ddf = 'kr', then the Kenward Roger approach is applied.}
+
+\item{NS.adj}{if TRUE, the denominator degrees of freedom are
+adjusted to replicate the R squared proposed by Nakagawa and Schielzeth.}
 }
 \value{
 A dataframe containing the model F statistic, numerator
@@ -23,12 +28,32 @@ A dataframe containing the model F statistic, numerator
   R^2 statistics for all fixed effects in the model
 }
 \description{
-Computes R^2 statistic from edwards et al., 2008.
+Computes coefficient of determination (r squared) from edwards et al., 2008.
 }
 \examples{
 library(nlme)
 library(lme4)
-m = lmer(distance ~ age*Sex + (1|Subject), data = Orthodont)
-r2beta(m, partial = T, ddf = 'kr')
+linmod = lm(distance~age*Sex, data = Orthodont)
+mermod = lmer(distance ~ age*Sex + (1|Subject), data = Orthodont)
+lmemod = lme(distance ~ age*Sex, random = ~1|Subject, data = Orthodont)
+r2beta(linmod, data = Orthodont, partial = T)
+r2beta(lmemod, data = Orthodont, partial = T, ddf = 'res')
+r2beta(mermod, data = Orthodont, partial = T, ddf = 'res')
+r2beta(mermod, data = Orthodont, partial = T, ddf = 'kr')
+
+# PQL models
+# Currently only residual degrees of freedom supported
+library(MASS)
+PQL_mod = glmmPQL(y ~ trt + I(week > 2), random = ~ 1 | ID,
+family = binomial, data = bacteria, verbose = F)
+r2beta(PQL_mod, data=bacteria, partial=T, ddf='res')
+}
+\references{
+Edwards, Lloyd J., et al. "An R2 statistic for fixed effects in
+   the linear mixed model." Statistics in medicine 27.29 (2008): 6137-6157.
+
+Nakagawa, Shinichi, and Holger Schielzeth. "A general and simple method for
+   obtaining R2 from generalized linear mixed‐effects models." Methods in
+   Ecology and Evolution 4.2 (2013): 133-142.
 }
 
