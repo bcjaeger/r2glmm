@@ -1,6 +1,10 @@
 
 
+<<<<<<< HEAD
 #' Compute r2beta with a specified C matrix
+=======
+#' Compute R2 with a specified C matrix
+>>>>>>> 963695e99d0c3235e00058662fba7428a951e9d5
 #' @param c Contrast matrix for fixed effects
 #' @param x Fixed effects design matrix
 #' @param SigHat estimated model covariance matrix

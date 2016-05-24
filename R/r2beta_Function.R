@@ -45,7 +45,15 @@ r2beta <- function(model, data=NULL, partial = F, ddf = 'res', NS.adj = F){
   if(is.null(data)) stop('The data argument is necessary')
   if(NS.adj == T & ddf == 'kr'){
     ddf = 'res'
+<<<<<<< HEAD
     cat('ddf=kr is not compatible with NS.adj is TRUE.')
+=======
+    cat(
+      'The Kenward Roger Approach is not compatible with
+the Nakagawa and Schielzeth approach. The denominator degrees
+of freedom are (number of observations - 1) if NS.adj is TRUE.\n'
+    )
+>>>>>>> 963695e99d0c3235e00058662fba7428a951e9d5
   }
   if(!require("stats")) stop("package 'stats' is essential")
   if(!require("afex")) stop("package 'afex' is essential")
@@ -71,6 +79,7 @@ r2beta <- function(model, data=NULL, partial = F, ddf = 'res', NS.adj = F){
   else if (any(c('merModLmerTest', 'lmerMod') %in% class(model))){
     # The Kenward Roger Approach
     if (ddf %in% c('kr', 'KR')) {
+<<<<<<< HEAD
 
       ### Get random effects from model call
 
@@ -117,6 +126,54 @@ r2beta <- function(model, data=NULL, partial = F, ddf = 'res', NS.adj = F){
 
         R2 = rbind(R2, r2part) %>% dplyr::arrange(desc(Rsq))
 
+=======
+
+      ### Get random effects from model call
+
+      random = paste('(',unlist(lme4::findbars(model@call)), ')',
+                     sep = '',
+                     collapse = '+')
+
+      # Null model formula:
+      # same covariance structure with fixed effects removed except the intercept
+
+      null.form <- stats::as.formula(paste('. ~ 1 +', random))
+
+      ### Compute Kenward Roger approximate F test using null model defined above
+
+      mc <- pbkrtest::KRmodcomp(model, update(model, null.form))$stat
+
+      # Compute the R2beta statistic for the full model
+      # Store results in a dataframe r2
+
+      R2 = data.frame(Effect = 'Model',
+                      F = mc$Fstat,
+                      v1 = mc$ndf,
+                      v2 = mc$ddf,
+                      ncp = mc$Fstat * mc$ndf,
+                      Rsq = with(mc, (ndf*Fstat / ddf) / (1 + ndf*Fstat / ddf) ) )
+
+      # use mixed function to conduct KR F tests for each
+      # fixed effect in the full model
+
+      if (partial == T){
+
+        partials <- afex::mixed(model@call$formula,
+                                data = model@frame,
+                                progress = F)$anova_table
+
+        p = data.frame(partials)
+        p$Effect = rownames(partials)
+        p = p[, c('F', 'num.Df', 'den.Df', 'Effect')]
+
+        # Compute partial R2beta statistics for all fixed effects
+
+        r2part = dplyr::mutate(p, Rsq = (num.Df * F / den.Df) / (1 + num.Df*F/den.Df),
+                               ncp = F * num.Df) %>% dplyr::rename(v1 = num.Df, v2 = den.Df)
+
+        R2 = rbind(R2, r2part) %>% dplyr::arrange(desc(Rsq))
+
+>>>>>>> 963695e99d0c3235e00058662fba7428a951e9d5
       }
 
     }
@@ -126,6 +183,7 @@ r2beta <- function(model, data=NULL, partial = F, ddf = 'res', NS.adj = F){
       # Get fixed effects
       beta = fixef(model)
       p <- length(beta)
+<<<<<<< HEAD
 
       # Get model matrices
       X = stats::model.matrix(model, data = data)
@@ -167,6 +225,49 @@ r2beta <- function(model, data=NULL, partial = F, ddf = 'res', NS.adj = F){
         R2[,i] = as.vector(unlist(lapply(r2, function(x) x[i])))
       }
 
+=======
+
+      # Get model matrices
+      X = stats::model.matrix(model, data = data)
+      n <- nrow(X)
+      Z = as.matrix(getME(model, 'Z'))
+
+      # Covariance Matrix from the model
+      s2e = getME(model, 'sigma')^2
+      G = as.matrix(s2e * getME(model, 'Lambda') %*% getME(model, 'Lambdat'))
+      SigHat = Z%*%G%*%t(Z) + s2e*diag(nrow(Z))
+
+      # NS approach takes the mean of the trace of the model covariance
+      if(NS.adj==T) SigHat = mean(diag(SigHat))
+
+      # C matrix defines the Wald Test for Fixed Effects
+      C = list(); nms = c('Model', names(beta)[-1])
+
+      # Define the model Wald statistic for all fixed effects
+      C[['Model']] = cbind(rep(0, p-1),diag(p-1))
+
+      # For partial R2 statistics:
+      if (partial == T){
+
+        # add the partial contrast matrices to C
+        for(i in 2:(p)){
+          C[[nms[i]]] = make.partial.C(rows=p-1, cols = p, index = i)
+        }
+
+      }
+
+      # Compute the specified R2
+      r2=lapply(C, FUN=cmp.R2, x=X, SigHat, beta, NS.adj=NS.adj)
+
+      # initialize a dataframe to hold results
+      R2 = data.frame(Effect = names(r2))
+
+      # place results in the dataframe
+      for(i in names(r2[[1]])){
+        R2[,i] = as.vector(unlist(lapply(r2, function(x) x[i])))
+      }
+
+>>>>>>> 963695e99d0c3235e00058662fba7428a951e9d5
       # Sort from highest R2 value to lowest
       # This is only meaningful if partial R2 are computed
       R2 = dplyr::arrange(R2, desc(Rsq))
@@ -221,10 +322,17 @@ r2beta <- function(model, data=NULL, partial = F, ddf = 'res', NS.adj = F){
         for(i in 2:(p)) C[[nms[i]]] = make.partial.C(rows=p-1, cols = p, index = i)
 
       }
+<<<<<<< HEAD
 
       # Compute the specified R2
       r2=lapply(C, FUN=cmp.R2, x=X, SigHat, beta, NS.adj=NS.adj)
 
+=======
+
+      # Compute the specified R2
+      r2=lapply(C, FUN=cmp.R2, x=X, SigHat, beta, NS.adj=NS.adj)
+
+>>>>>>> 963695e99d0c3235e00058662fba7428a951e9d5
       # initialize a dataframe to hold results
       R2 = data.frame(Effect = names(r2))
 
@@ -246,4 +354,7 @@ r2beta <- function(model, data=NULL, partial = F, ddf = 'res', NS.adj = F){
 
 
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 963695e99d0c3235e00058662fba7428a951e9d5
