@@ -2,11 +2,8 @@
 % Please edit documentation in R/cmpR2_Function.R
 \name{cmp.R2}
 \alias{cmp.R2}
-<<<<<<< HEAD
-\title{Compute r2beta with a specified C matrix}
-=======
-\title{Compute R2 with a specified C matrix}
->>>>>>> 963695e99d0c3235e00058662fba7428a951e9d5
+\title{Compute r2beta with a specified C matrix
+Compute R2 with a specified C matrix}
 \usage{
 cmp.R2(c, x, SigHat, beta, NS.adj = F)
 }
@@ -28,11 +25,8 @@ statistic (F), numerator degrees of freedom (v1), denominator degrees
 of freedom (v2), and the specified r squared value (Rsq)
 }
 \description{
-<<<<<<< HEAD
 Compute r2beta with a specified C matrix
-=======
 Compute R2 with a specified C matrix
->>>>>>> 963695e99d0c3235e00058662fba7428a951e9d5
 }
 \examples{
 library(nlme)
