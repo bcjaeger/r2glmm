@@ -2,16 +2,12 @@
 % Please edit documentation in R/r2_sgv_est_Function.R
 \name{r2.sgv}
 \alias{r2.sgv}
-\title{Computes R squared statistic for a generalized linear mixed model using
-penalized quasi likelihood (PQL) estimation and standardized generalized
-variance (SGV).}
+\title{r2.sgv}
 \usage{
-r2.sgv(model, data, adj = T)
+r2.sgv(model, adj = T)
 }
 \arguments{
-\item{model}{a fitted mixed model (lmerMod or lme object)}
-
-\item{data}{the dataframe used to fit the mixed model.}
+\item{model}{a fitted mixed model.}
 
 \item{adj}{if TRUE, an adjusted R squared for model selection is provided.}
 }
@@ -20,20 +16,22 @@ The R squared statistic and adjusted R squared based on SGV
         for \code{model}.
 }
 \description{
-Currently implemented for linear mixed models with
-\code{\link{lmerTest::merMod}} and \code{\link{nlme::lme}} objects. For
-generalized linear mixed models, only \code{\link{MASS::glmmPQL}} objects
-are compatible.
+Computes R squared for a linear or generalized linear mixed
+model using penalized quasi likelihood (PQL) estimation and standardized
+generalized variance (SGV). Currently implemented for linear mixed models
+with \code{\link{lmer}} and \code{\link{lme}} objects.
+For generalized linear mixed models, only \code{\link{glmmPQL}}
+objects are compatible.
 }
 \examples{
 
 library(nlme)
 m = lme(distance ~ age*Sex, random = ~1|Subject, data = Orthodont)
-r2.sgv(m, data = Orthodont)
+r2.sgv(m)
 
 library(MASS)
 PQL_mod = glmmPQL(y ~ trt + I(week > 2), random = ~ 1 | ID,
 family = binomial, data = bacteria, verbose = F)
-r2.sgv(PQL_mod, data=bacteria)
+r2.sgv(PQL_mod)
 }
 
