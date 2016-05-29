@@ -2,8 +2,6 @@
 
 
 
-
-
 #' Compute the standardized generalized variance (SGV) of a blocked diagonal matrix.
 #'
 #' @param nblocks Number of blocks in the matrix.
@@ -17,6 +15,8 @@
 #' @export calc.sgv
 
 calc.sgv <- function(nblocks, blk.sizes, vmat){
+
+  if(!require("Matrix",quietly=T)) stop("package 'Matrix' is essential")
 
   # initialize the sgv values
   sgv = rep(0, nblocks)
@@ -44,91 +44,74 @@ calc.sgv <- function(nblocks, blk.sizes, vmat){
   # This gives the geometric mean of the sgv of the blocks
   SGV = exp(mean(sgv))
 
-  return(SGV)
+  return(as.numeric(SGV))
 
 }
 
-
-#' Computes R squared statistic for a generalized linear mixed model using
-#' penalized quasi likelihood (PQL) estimation and standardized generalized
-#' variance (SGV).
+#' r2.sgv
 #'
-#' Currently implemented for linear mixed models with
-#' \code{\link{lmerTest::merMod}} and \code{\link{nlme::lme}} objects. For
-#' generalized linear mixed models, only \code{\link{MASS::glmmPQL}} objects
-#' are compatible.
+#' @description  Computes R squared for a linear or generalized linear mixed
+#' model using penalized quasi likelihood (PQL) estimation and standardized
+#' generalized variance (SGV). Currently implemented for linear mixed models
+#' with \code{\link{lmer}} and \code{\link{lme}} objects.
+#' For generalized linear mixed models, only \code{\link{glmmPQL}}
+#' objects are compatible.
 #'
-#' @param model a fitted mixed model (lmerMod or lme object)
+#' @param model a fitted mixed model.
 #' @param adj if TRUE, an adjusted R squared for model selection is provided.
-#' @param data the dataframe used to fit the mixed model.
 #' @return The R squared statistic and adjusted R squared based on SGV
 #'         for \code{model}.
 #' @examples
 #'
 #' library(nlme)
 #' m = lme(distance ~ age*Sex, random = ~1|Subject, data = Orthodont)
-#' r2.sgv(m, data = Orthodont)
+#' r2.sgv(m)
 #'
 #' library(MASS)
 #' PQL_mod = glmmPQL(y ~ trt + I(week > 2), random = ~ 1 | ID,
 #' family = binomial, data = bacteria, verbose = F)
-#' r2.sgv(PQL_mod, data=bacteria)
-#' @export r2.sgv
-#'
+#' r2.sgv(PQL_mod)
+#' @export
 
-r2.sgv <- function(model, data, adj = T){
+r2.sgv <- function(model, adj = T){
 
-  if(!require("Matrix")) stop("package 'Matrix' is essential")
-  if(!require("mgcv")) stop("package 'mgcv' is essential")
-  if(!require("AICcmodavg")) stop("package 'AICcmodavg' is essential")
+  if(!require("Matrix",quietly=T)) stop("package 'Matrix' is essential")
+  if(!require("mgcv",quietly=T)) stop("package 'mgcv' is essential")
+  if(!require("AICcmodavg",quietly=T)) stop("package 'AICcmodavg' is essential")
 
   # Get fixed effects
   beta = fixef(model)
   p <- length(beta)
 
-  X = stats::model.matrix(model, data = data)
-  n <- nrow(X)
-
   if(any(c('merModLmerTest', 'lmerMod') %in% class(model))){
 
+    s2e = getME(model, 'sigma')^2
+    X = getME(model, 'X')
+    n = nrow(X)
     Z = as.matrix(lme4::getME(model, 'Z'))
-    G.list = N = num.clusters = list()
-
-    for(part in names(model@flist)){
-
-      # get the counts of units within blocks
-      N[[part]] = as.numeric(table(eval(model@call$data)[, part]))
-      num.clusters[[part]] = length(N[[part]])
-
-      # take the covariance matrix for the current variance component
-      g = matrix(VarCorr(model)[[part]], nrow = dim(VarCorr(model)[[part]])[1])
-
-      # stack it, and then store it in the G.list
-      G.list[[part]] = kronecker(diag(num.clusters[[part]]), g)
-
-    }
-
-    # Stacked (diagonal) random effects covariance matrix
-    G = as.matrix(Matrix::bdiag(G.list))
+    G = as.matrix(s2e * getME(model, 'Lambda') %*% getME(model, 'Lambdat'))
 
     # Covariance Matrix from the model
-    v.y = Z%*%G%*%t(Z) + sigma(model)^2*diag(nrow(Z))
+    SigHat = Z%*%G%*%t(Z) + s2e*diag(nrow(Z))
 
-    # Number of clusters in the covariance matrix of responses
-    blks = unlist(num.clusters)
-    obspersub = N[[names(which.min(blks))]]
-    nsubs = min(blks)
+    clust.id = names(model@flist)[ length(model@flist) ]
+    obsperclust = as.numeric(table(model@frame[,clust.id]))
+    nclusts = length(obsperclust)
 
-    SGV = calc.sgv(nblocks = nsubs, blk.sizes = obspersub, vmat = v.y)
+    SGV = calc.sgv(nblocks = nclusts, blk.sizes = obsperclust, vmat = SigHat)
 
   } else if('lme' %in% class(model)){
 
-    # Get grouping information from the model
-    cluster.name = names(summary(model)$groups)[1]
-    obspersub = as.numeric(table(model$data[,cluster.name]))
-    nsubs = length(obspersub)
+    X=stats::model.matrix(eval(model$call$fixed)[-2],
+      data = model$data[,which( !(names(model$data)%in%c('zz','invwt')) )])
+    n <- nrow(X)
 
-    SGV = calc.sgv(nblocks = nsubs, blk.sizes = obspersub,
+    # Get grouping information from the model
+    clust.id = names(summary(model)$groups)[1]
+    obsperclust = as.numeric(table(model$data[,clust.id]))
+    nclusts = length(obsperclust)
+
+    SGV = calc.sgv(nblocks = nclusts, blk.sizes = obsperclust,
       vmat = bdiag(extract.lme.cov2(model, model$data, start.level=1)[['V']]))
   }
 
@@ -140,9 +123,8 @@ r2.sgv <- function(model, data, adj = T){
 
   if(adj==T){
 
-
     nprms = AICcmodavg::AICc(model, return.K = T)
-    const = n / (mean(obspersub))
+    const = n - mean(obsperclust)
     r2adj = 1 - (1 - r2) * (const-1) / (const - nprms - 1)
     r2 = c('r2sgv' = r2, 'r2sgv.adj' = r2adj)
 
@@ -151,5 +133,9 @@ r2.sgv <- function(model, data, adj = T){
   return(r2)
 
 }
+
+
+
+
 
 

@@ -5,19 +5,16 @@
 \title{Compute r2beta with a specified C matrix
 Compute R2 with a specified C matrix}
 \usage{
-cmp.R2(c, x, SigHat, beta, NS.adj = F)
+cmp.R2(c, x, SigHat, beta)
 }
 \arguments{
 \item{c}{Contrast matrix for fixed effects}
 
 \item{x}{Fixed effects design matrix}
 
-\item{SigHat}{estimated model covariance matrix}
+\item{SigHat}{estimated model covariance (matrix or scalar)}
 
 \item{beta}{fixed effects estimates}
-
-\item{NS.adj}{if True, the denominator degrees of freedom are
-adjusted to replicate the R squared proposed by Nakagawa and Schielzeth.}
 }
 \value{
 A vector with the Wald statistic (ncp), approximate Wald F

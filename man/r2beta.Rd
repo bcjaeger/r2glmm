@@ -2,33 +2,36 @@
 % Please edit documentation in R/r2beta_Function.R
 \name{r2beta}
 \alias{r2beta}
-\title{Computes coefficient of determination (r squared) from edwards et al., 2008.}
+\title{r2beta}
 \usage{
-r2beta(model, data = NULL, partial = F, ddf = "res", NS.adj = F)
+r2beta(model, partial = T, method = "sgv")
 }
 \arguments{
-\item{model}{a fitted lmerMod object}
-
-\item{data}{the data used for the fitted model.}
+\item{model}{a fitted mermod, lme, or glmmPQL model.}
 
 \item{partial}{if TRUE, semi-partial R squared are calculated for each
 fixed effect in the mixed model.}
 
-\item{ddf}{Approximation method for the denominator degrees of freedom
-if ddf = 'res' then residual degrees of freedom are used
-if ddf = 'kr', then the Kenward Roger approach is applied.}
-
-\item{NS.adj}{if TRUE, the denominator degrees of freedom are
-adjusted to replicate the R squared proposed by Nakagawa and Schielzeth.}
+\item{method}{Specifies the method of computation for \eqn{R^{2}_{\beta}}.
+if \code{method} = 'sgv' then residual degrees of freedom are used
+if \code{method} = 'kr', then the Kenward Roger approach is applied.
+This option is only available for \code{\link{lme}} models.
+if \code{method} = 'nsj',then the Nakagawa and Schielzeth approach
+is applied. This option is available for
+\code{\link{lmer}} and \code{\link{lme}} objects.}
 }
 \value{
 A dataframe containing the model F statistic, numerator
-  and denominator degrees of freedom, and R^2 statistic. If
+  and denominator degrees of freedom, and R squared statistic. If
   partial = TRUE, then the dataframe also contains partial
-  R^2 statistics for all fixed effects in the model
+  R squared statistics for all fixed effects in the model
 }
 \description{
-Computes coefficient of determination (r squared) from edwards et al., 2008.
+Computes coefficient of determination (R squared) from
+edwards et al., 2008. Currently implemented for linear mixed models with
+\code{\link{lmer}} and \code{\link{lme}} objects. For
+generalized linear mixed models, \code{\link{glmmPQL}} objects
+must be used with \code{ddf} = 'res'.
 }
 \examples{
 library(nlme)
@@ -36,17 +39,19 @@ library(lme4)
 linmod = lm(distance~age*Sex, data = Orthodont)
 mermod = lmer(distance ~ age*Sex + (1|Subject), data = Orthodont)
 lmemod = lme(distance ~ age*Sex, random = ~1|Subject, data = Orthodont)
-r2beta(linmod, data = Orthodont, partial = T)
-r2beta(lmemod, data = Orthodont, partial = T, ddf = 'res')
-r2beta(mermod, data = Orthodont, partial = T, ddf = 'res')
-r2beta(mermod, data = Orthodont, partial = T, ddf = 'kr')
+r2beta(linmod)
+r2beta(mermod, method = 'kr')
+r2beta(mermod, method = 'sgv')
+r2beta(mermod, method = 'nsj')
+
 
 # PQL models
 # Currently only residual degrees of freedom supported
 library(MASS)
 PQL_mod = glmmPQL(y ~ trt + I(week > 2), random = ~ 1 | ID,
-family = binomial, data = bacteria, verbose = F)
-r2beta(PQL_mod, data=bacteria, partial=T, ddf='res')
+                  family = binomial, data = bacteria, verbose = F)
+
+r2beta(PQL_mod, method='sgv')
 }
 \references{
 Edwards, Lloyd J., et al. "An R2 statistic for fixed effects in
