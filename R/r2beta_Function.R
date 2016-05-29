@@ -111,7 +111,7 @@ r2beta <- function(model, partial = T, method='sgv'){
       # Store results in a dataframe r2
 
       R2 = data.frame(Effect = 'Model',
-                      f = mc$Fstat, v1 = mc$ndf, v2 = mc$ddf,
+                      F = mc$Fstat, v1 = mc$ndf, v2 = mc$ddf,
                       ncp = mc$Fstat * mc$ndf,
                       Rsq = with(mc, (ndf*Fstat / ddf) / (1 + ndf*Fstat/ddf) ) )
 
@@ -284,7 +284,5 @@ r2beta <- function(model, partial = T, method='sgv'){
   return(R2)
 
 }
-
-
 
 
