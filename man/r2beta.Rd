@@ -12,8 +12,9 @@ r2beta(model, partial = T, method = "sgv")
 \item{partial}{if TRUE, semi-partial R squared are calculated for each
 fixed effect in the mixed model.}
 
-\item{method}{Specifies the method of computation for \eqn{R^{2}_{\beta}}.
-if \code{method} = 'sgv' then residual degrees of freedom are used
+\item{method}{Specifies the method of computation for R squared beta:
+if \code{method} = 'sgv' then the standardized generalized variance
+approach is applied.
 if \code{method} = 'kr', then the Kenward Roger approach is applied.
 This option is only available for \code{\link{lme}} models.
 if \code{method} = 'nsj',then the Nakagawa and Schielzeth approach
@@ -58,7 +59,10 @@ Edwards, Lloyd J., et al. "An R2 statistic for fixed effects in
    the linear mixed model." Statistics in medicine 27.29 (2008): 6137-6157.
 
 Nakagawa, Shinichi, and Holger Schielzeth. "A general and simple method for
-   obtaining R2 from generalized linear mixed‐effects models." Methods in
+   obtaining R2 from generalized linear mixed effects models." Methods in
    Ecology and Evolution 4.2 (2013): 133-142.
+
+Jaeger, Byron C., et al., "An R Squared Statistic for Fixed Effects in the
+   Generalized Linear Mixed Model." Journal of Applied Statistics (2016).
 }
 
