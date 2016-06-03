@@ -5,7 +5,7 @@
 \title{Compute r2beta with a specified C matrix
 Compute R2 with a specified C matrix}
 \usage{
-cmp.R2(c, x, SigHat, beta)
+cmp.R2(c, x, SigHat, beta, method, obsperclust, nclusts)
 }
 \arguments{
 \item{c}{Contrast matrix for fixed effects}

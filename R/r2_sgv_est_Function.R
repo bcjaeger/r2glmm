@@ -23,20 +23,18 @@ calc.sgv <- function(nblocks, blk.sizes, vmat){
 
   for(i in 1:nblocks){
 
-    # Get the first 'block' out of the covariance matrix
+    # Get a 'block' out of the covariance matrix
     if(i == 1){
       start = 1; end = blk.sizes[1]
-      mat = vmat[start:end, start:end]
-    }
-
-    # if i >= 2, pick out the i^{th} block from vmat
-    if(i >= 2){
+    } else {
       start = 1+sum(blk.sizes[1:i-1])
       end = start-1+blk.sizes[i]
-      mat = vmat[start:end, start:end]
     }
-    # determinants can be large, so log function is used for numeric stability
-    mat = as.matrix(mat)
+
+    # Pick out the i^th block
+    mat = as.matrix(vmat[start:end, start:end])
+
+    # use log transform for numeric stability
     sgv[i] = log(det(mat))/nrow(mat)
   }
 

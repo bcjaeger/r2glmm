@@ -6,7 +6,7 @@
 #' edwards et al., 2008. Currently implemented for linear mixed models with
 #' \code{\link{lmer}} and \code{\link{lme}} objects. For
 #' generalized linear mixed models, \code{\link{glmmPQL}} objects
-#' must be used with \code{ddf} = 'res'.
+#' must be used with \code{method} = 'sgv'.
 #'
 #' @param model a fitted mermod, lme, or glmmPQL model.
 #'
@@ -15,16 +15,18 @@
 #'
 #' @param method Specifies the method of computation for R squared beta:
 #'            if \code{method} = 'sgv' then the standardized generalized variance
-#'            approach is applied.
+#'            approach is applied. This method is recommended for covariance model
+#'            selection.
 #'            if \code{method} = 'kr', then the Kenward Roger approach is applied.
 #'            This option is only available for \code{\link{lme}} models.
 #'            if \code{method} = 'nsj',then the Nakagawa and Schielzeth approach
 #'            is applied. This option is available for
 #'            \code{\link{lmer}} and \code{\link{lme}} objects.
 #' @return A dataframe containing the model F statistic, numerator
-#'   and denominator degrees of freedom, and R squared statistic. If
-#'   partial = TRUE, then the dataframe also contains partial
-#'   R squared statistics for all fixed effects in the model
+#'   and denominator degrees of freedom, non-centrality parameter,
+#'   and R squared statistic. If partial = TRUE, then the dataframe
+#'   also contains partial R squared statistics for all fixed effects
+#'   in the model.
 #' @references  Edwards, Lloyd J., et al. "An R2 statistic for fixed effects in
 #'    the linear mixed model." Statistics in medicine 27.29 (2008): 6137-6157.
 #'
@@ -38,24 +40,34 @@
 #' @examples
 #' library(nlme)
 #' library(lme4)
-#' linmod = lm(distance~age*Sex, data = Orthodont)
+#' data(Orthodont)
 #' mermod = lmer(distance ~ age*Sex + (1|Subject), data = Orthodont)
 #' lmemod = lme(distance ~ age*Sex, random = ~1|Subject, data = Orthodont)
-#
-#' r2beta(linmod)
+#'
+#' # The Kenward-Roger approach
 #' r2beta(mermod, method = 'kr')
+#'
+#' # Standardized Generalized Variance
 #' r2beta(mermod, method = 'sgv')
+#' r2beta(lmemod, method = 'sgv')
+#'
+#' # The marginal R squared by Nakagawa and Schielzeth (extended by Johnson)
 #' r2beta(mermod, method = 'nsj')
 #'
 #'
 #' # PQL models
 #' # Currently only residual degrees of freedom supported
 #' library(MASS)
-#' PQL_mod = glmmPQL(y ~ trt + I(week > 2), random = ~ 1 | ID,
+#' PQL_bac = glmmPQL(y ~ trt + I(week > 2), random = ~ 1 | ID,
 #'                   family = binomial, data = bacteria, verbose = F)
 #'
-#' r2beta(PQL_mod, method='sgv')
-
+#' r2beta(PQL_bac, method='sgv')
+#'
+#' library(mmm)
+#' data("multiLongCount")
+#' PQL_cnt = glmmPQL(resp1~X*time, random = ~1+time|ID,
+#'                   family='poisson', data = multiLongCount)
+#' r2beta(PQL_cnt, method = 'sgv')
 #' @export r2beta
 #------------------------------------------------------------------------------#
 
@@ -73,6 +85,7 @@ r2beta <- function(model, partial = T, method='sgv'){
   # If the model has no random effects (i.e. a linear model)
 
   if (any(class(model) == 'lm')){
+    beta = coef(model)
     sm = summary(model)
     R2 = data.frame(Effect = 'Model', F = sm$fstatistic['value'],
                     v1 = sm$fstatistic['numdf'],
@@ -92,6 +105,7 @@ r2beta <- function(model, partial = T, method='sgv'){
     # Get grouping information from the model
     clust.id = names(model@flist)[ length(model@flist) ]
     obsperclust = as.numeric(table(model@frame[,clust.id]))
+    mobs = mean(obsperclust)
     nclusts = length(obsperclust)
 
     # The Kenward Roger Approach
@@ -189,7 +203,8 @@ r2beta <- function(model, partial = T, method='sgv'){
       }
 
       # Compute the specified R2
-      r2=lapply(C, FUN=cmp.R2, x=X, SigHat, beta)
+      r2=lapply(C, FUN=cmp.R2, x=X, SigHat=SigHat, beta=beta, method=method,
+                obsperclust=obsperclust, nclusts=nclusts)
 
       # initialize a dataframe to hold results
       R2 = data.frame(Effect = names(r2))
@@ -212,6 +227,7 @@ r2beta <- function(model, partial = T, method='sgv'){
     # Get grouping information from the model
     clust.id = names(summary(model)$groups)[1]
     obsperclust = as.numeric(table(model$data[,clust.id]))
+    mobs = mean(obsperclust)
     nclusts = length(obsperclust)
 
     if('glmmPQL' %in% class(model) & toupper(method)=='NSJ'){
@@ -265,7 +281,8 @@ r2beta <- function(model, partial = T, method='sgv'){
       }
 
       # Compute the specified R2
-      r2=lapply(C, FUN=cmp.R2, x=X, SigHat, beta)
+      r2=lapply(C, FUN=cmp.R2, x=X, SigHat=SigHat, beta=beta, method=method,
+                obsperclust=obsperclust, nclusts=nclusts)
 
       # initialize a dataframe to hold results
       R2 = data.frame(Effect = names(r2))
@@ -277,17 +294,27 @@ r2beta <- function(model, partial = T, method='sgv'){
     }
   }
 
-  nprms = AICcmodavg::AICc(model, return.K = T)
-  const = n - mean(obsperclust)
-
   R2 = mutate(R2,
               lower.CL = qbeta(0.025, v1/2, v2/2, ncp),
-              upper.CL = qbeta(0.975, v1/2, v2/2, ncp),
-              r2adj = 1 - (1 - Rsq) * (const-1) / (const-nprms-1)
-              ) %>% dplyr::arrange(desc(Rsq))
+              upper.CL = qbeta(0.975, v1/2, v2/2, ncp)) %>%
+    dplyr::arrange(desc(Rsq))
+
+  if (toupper(method) != 'KR'){
+
+    # Get the total number of parameters used in the model
+    nprms = AICcmodavg::AICc(model, return.K = T)
+    nfixprms = length(beta)
+    ncovprms = nprms - nfixprms
+
+    if( ncovprms >= 2 ) prm.pen = nfixprms-1 + 0.5*(ncovprms-1)*nclusts/mobs
+    if( ncovprms <= 1 ) prm.pen = nfixprms-1
+
+    R2$adj.Rsq = with(R2, 1 - (1 - Rsq) * (v2) / (v2-prm.pen))
+    R2[R2$Effect != 'Model', 'adj.Rsq'] = NA
+
+  }
 
   return(R2)
 
 }
-
 

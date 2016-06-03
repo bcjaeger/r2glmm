@@ -24,7 +24,7 @@
 #' cmp.R2(c=C, x=X, SigHat=SigHat, beta=beta)
 #' cmp.R2(c=partial.c, x=X, SigHat=SigHat, beta=beta)
 #' @export cmp.R2
-cmp.R2 = function(c, x, SigHat, beta){
+cmp.R2 = function(c, x, SigHat, beta, method, obsperclust, nclusts){
 
   scalar = !is.matrix(SigHat)
 
@@ -43,7 +43,27 @@ cmp.R2 = function(c, x, SigHat, beta){
   wald = t(c %*% beta) %*% MASS::ginv(denom) %*% c%*%beta / rank.c
 
   # Compute the R2 statistic
-  ddf = ifelse(scalar, num.obs-1, num.obs-1-rank.c)
+
+  if(toupper(method)=='NSJ') ddf = num.obs - 1
+
+  if(toupper(method)=='SGV'){
+
+    mobs = mean(obsperclust)
+    m = nclusts - mobs - 1
+
+    if(m <= 0){
+
+      ddf = num.obs - 1
+
+      print('Number of observations per cluster is greater than the number of clusters. Setting ddf to n-1.')
+    }
+
+    if( m > 0){
+      ddf = mobs * (m+1) + (mobs-1)*(mobs-2) / 2
+    }
+
+  }
+
   ndf = rank.c
   ss = ndf/ddf * wald
   R2 = ss/(1+ss)
@@ -51,3 +71,33 @@ cmp.R2 = function(c, x, SigHat, beta){
   return(c(F = wald, v1 = ndf, v2 = ddf, ncp = wald*ndf, Rsq = R2))
 
 }
+
+
+# Older version
+# cmp.R2 = function(c, x, SigHat, beta){
+#
+#   scalar = !is.matrix(SigHat)
+#
+#   # Compute relevant quantities for degrees of freedom
+#   rank.c = sum(apply(c, 2, sum))
+#   num.obs = nrow(x)
+#   Xmt = matrix(x, nrow = num.obs)
+#
+#   # Compute the approximate Wald F Statistic
+#   if(scalar){
+#     denom = SigHat * as.matrix(c %*% Matrix::solve( t(Xmt)%*%Xmt ) %*% t(c))
+#   } else {
+#     denom = as.matrix(c %*% solve(t(Xmt)%*%Matrix::solve(SigHat)%*%Xmt) %*% t(c))
+#   }
+#
+#   wald = t(c %*% beta) %*% MASS::ginv(denom) %*% c%*%beta / rank.c
+#
+#   # Compute the R2 statistic
+#   ddf = ifelse(scalar, num.obs-1, num.obs-1-rank.c)
+#   ndf = rank.c
+#   ss = ndf/ddf * wald
+#   R2 = ss/(1+ss)
+#
+#   return(c(F = wald, v1 = ndf, v2 = ddf, ncp = wald*ndf, Rsq = R2))
+#
+# }

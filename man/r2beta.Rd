@@ -14,7 +14,8 @@ fixed effect in the mixed model.}
 
 \item{method}{Specifies the method of computation for R squared beta:
 if \code{method} = 'sgv' then the standardized generalized variance
-approach is applied.
+approach is applied. This method is recommended for covariance model
+selection.
 if \code{method} = 'kr', then the Kenward Roger approach is applied.
 This option is only available for \code{\link{lme}} models.
 if \code{method} = 'nsj',then the Nakagawa and Schielzeth approach
@@ -23,36 +24,49 @@ is applied. This option is available for
 }
 \value{
 A dataframe containing the model F statistic, numerator
-  and denominator degrees of freedom, and R squared statistic. If
-  partial = TRUE, then the dataframe also contains partial
-  R squared statistics for all fixed effects in the model
+  and denominator degrees of freedom, non-centrality parameter,
+  and R squared statistic. If partial = TRUE, then the dataframe
+  also contains partial R squared statistics for all fixed effects
+  in the model.
 }
 \description{
 Computes coefficient of determination (R squared) from
 edwards et al., 2008. Currently implemented for linear mixed models with
 \code{\link{lmer}} and \code{\link{lme}} objects. For
 generalized linear mixed models, \code{\link{glmmPQL}} objects
-must be used with \code{ddf} = 'res'.
+must be used with \code{method} = 'sgv'.
 }
 \examples{
 library(nlme)
 library(lme4)
-linmod = lm(distance~age*Sex, data = Orthodont)
+data(Orthodont)
 mermod = lmer(distance ~ age*Sex + (1|Subject), data = Orthodont)
 lmemod = lme(distance ~ age*Sex, random = ~1|Subject, data = Orthodont)
-r2beta(linmod)
+
+# The Kenward-Roger approach
 r2beta(mermod, method = 'kr')
+
+# Standardized Generalized Variance
 r2beta(mermod, method = 'sgv')
+r2beta(lmemod, method = 'sgv')
+
+# The marginal R squared by Nakagawa and Schielzeth (extended by Johnson)
 r2beta(mermod, method = 'nsj')
 
 
 # PQL models
 # Currently only residual degrees of freedom supported
 library(MASS)
-PQL_mod = glmmPQL(y ~ trt + I(week > 2), random = ~ 1 | ID,
+PQL_bac = glmmPQL(y ~ trt + I(week > 2), random = ~ 1 | ID,
                   family = binomial, data = bacteria, verbose = F)
 
-r2beta(PQL_mod, method='sgv')
+r2beta(PQL_bac, method='sgv')
+
+library(mmm)
+data("multiLongCount")
+PQL_cnt = glmmPQL(resp1~X*time, random = ~1+time|ID,
+                  family='poisson', data = multiLongCount)
+r2beta(PQL_cnt, method = 'sgv')
 }
 \references{
 Edwards, Lloyd J., et al. "An R2 statistic for fixed effects in
