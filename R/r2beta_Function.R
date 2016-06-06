@@ -299,20 +299,20 @@ r2beta <- function(model, partial = T, method='sgv'){
               upper.CL = qbeta(0.975, v1/2, v2/2, ncp)) %>%
     dplyr::arrange(desc(Rsq))
 
-  if (toupper(method) != 'KR'){
-
-    # Get the total number of parameters used in the model
-    nprms = AICcmodavg::AICc(model, return.K = T)
-    nfixprms = length(beta)
-    ncovprms = nprms - nfixprms
-
-    if( ncovprms >= 2 ) prm.pen = nfixprms-1 + 0.5*(ncovprms-1)*nclusts/mobs
-    if( ncovprms <= 1 ) prm.pen = nfixprms-1
-
-    R2$adj.Rsq = with(R2, 1 - (1 - Rsq) * (v2) / (v2-prm.pen))
-    R2[R2$Effect != 'Model', 'adj.Rsq'] = NA
-
-  }
+  # if (toupper(method) != 'KR'){
+  #
+  #   # Get the total number of parameters used in the model
+  #   nprms = AICcmodavg::AICc(model, return.K = T)
+  #   nfixprms = length(beta)
+  #   ncovprms = nprms - nfixprms
+  #
+  #   if( ncovprms >= 2 ) prm.pen = nfixprms-1 + 0.5*(ncovprms-1)*nclusts/mobs
+  #   if( ncovprms <= 1 ) prm.pen = nfixprms-1
+  #
+  #   R2$adj.Rsq = with(R2, 1 - (1 - Rsq) * (v2) / (v2-prm.pen))
+  #   R2[R2$Effect != 'Model', 'adj.Rsq'] = NA
+  #
+  # }
 
   return(R2)
 
