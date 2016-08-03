@@ -71,7 +71,7 @@
 #' @export r2beta
 #------------------------------------------------------------------------------#
 
-r2beta <- function(model, partial = T, method='sgv'){
+r2beta <- function(model, partial = T, method='kr'){
 
   if(!require("stats",quietly=T)) stop("package 'stats' is essential")
   if(!require("afex",quietly=T)) stop("package 'afex' is essential")
@@ -124,7 +124,8 @@ r2beta <- function(model, partial = T, method='sgv'){
 
       # Compute Kenward Roger approximate F test using null model defined above
 
-      mc <- pbkrtest::KRmodcomp(model, update(model, null.form))$stat
+      mc <- pbkrtest::KRmodcomp(model,
+                         update(model, null.form, data = model@frame))$stat
 
       # Compute the R2beta statistic for the full model
       # Store results in a dataframe r2
@@ -158,7 +159,7 @@ r2beta <- function(model, partial = T, method='sgv'){
       }
 
     }
-    # Simplified methods
+    # SGV and NSJ methods
     else if (toupper(method) == 'SGV' | toupper(method) == 'NSJ'){
 
       # Get fixed effects estimates
@@ -170,7 +171,7 @@ r2beta <- function(model, partial = T, method='sgv'){
 
       # Get variance component estimates
       s2e = getME(model, 'sigma')^2
-      G = as.matrix(s2e * getME(model, 'Lambda') %*% getME(model, 'Lambdat'))
+      G = s2e * as.matrix(getME(model, 'Lambda') %*% getME(model, 'Lambdat'))
 
       # Compute estimated covariance matrix
       SigHat = Z%*%G%*%t(Z) + s2e*diag(nrow(Z))
@@ -185,7 +186,7 @@ r2beta <- function(model, partial = T, method='sgv'){
       if(toupper(method)=='SGV'){
 
         # SGV approach takes standardized determinant of the model covariance
-        SigHat = calc.sgv(nclusts, obsperclust, SigHat)
+        SigHat = calc.sgv(nblocks = nclusts, vmat = SigHat)
 
       }
 
@@ -247,21 +248,21 @@ r2beta <- function(model, partial = T, method='sgv'){
       p <- length(beta)
 
       # Get covariance matrix from the model
-      SigHat = bdiag(mgcv::extract.lme.cov2(model, model$data, start.level=1)[['V']])
+
+      mlist = mgcv::extract.lme.cov2(model, model$data, start.level=1)[['V']]
 
       if(toupper(method)=='NSJ'){
 
         # NS approach takes the mean of the trace of SigHat
-        SigHat = mean(diag(as.matrix(SigHat)))
+        SigHat = mean(diag(as.matrix(bdiag(mlist))))
 
       }
 
       # SGV approach takes the standardized generalized variance of SigHat
       if(toupper(method)=='SGV'){
 
-        SigHat = calc.sgv(nblocks = nclusts,
-                          blk.sizes = obsperclust,
-                          vmat = SigHat)
+        SigHat = calc.sgv(nblocks = nclusts, vmat = mlist)
+
       }
 
       # C matrix defines the Wald Test for Fixed Effects
@@ -298,21 +299,6 @@ r2beta <- function(model, partial = T, method='sgv'){
               lower.CL = qbeta(0.025, v1/2, v2/2, ncp),
               upper.CL = qbeta(0.975, v1/2, v2/2, ncp)) %>%
     dplyr::arrange(desc(Rsq))
-
-  # if (toupper(method) != 'KR'){
-  #
-  #   # Get the total number of parameters used in the model
-  #   nprms = AICcmodavg::AICc(model, return.K = T)
-  #   nfixprms = length(beta)
-  #   ncovprms = nprms - nfixprms
-  #
-  #   if( ncovprms >= 2 ) prm.pen = nfixprms-1 + 0.5*(ncovprms-1)*nclusts/mobs
-  #   if( ncovprms <= 1 ) prm.pen = nfixprms-1
-  #
-  #   R2$adj.Rsq = with(R2, 1 - (1 - Rsq) * (v2) / (v2-prm.pen))
-  #   R2[R2$Effect != 'Model', 'adj.Rsq'] = NA
-  #
-  # }
 
   return(R2)
 

@@ -24,6 +24,7 @@
 #' cmp.R2(c=C, x=X, SigHat=SigHat, beta=beta)
 #' cmp.R2(c=partial.c, x=X, SigHat=SigHat, beta=beta)
 #' @export cmp.R2
+
 cmp.R2 = function(c, x, SigHat, beta, method, obsperclust, nclusts){
 
   scalar = !is.matrix(SigHat)
@@ -35,7 +36,7 @@ cmp.R2 = function(c, x, SigHat, beta, method, obsperclust, nclusts){
 
   # Compute the approximate Wald F Statistic
   if(scalar){
-    denom = SigHat * as.matrix(c %*% Matrix::solve( t(Xmt)%*%Xmt ) %*% t(c))
+    denom = SigHat * as.matrix(c %*% Matrix::solve( crossprod(Xmt) ) %*% t(c))
   } else {
     denom = as.matrix(c %*% solve(t(Xmt)%*%Matrix::solve(SigHat)%*%Xmt) %*% t(c))
   }

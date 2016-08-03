@@ -2,6 +2,6 @@
 
 export(calc.sgv)
 export(cmp.R2)
+export(is.CompSym)
 export(make.partial.C)
-export(r2.sgv)
 export(r2beta)

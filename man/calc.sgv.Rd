@@ -4,14 +4,14 @@
 \alias{calc.sgv}
 \title{Compute the standardized generalized variance (SGV) of a blocked diagonal matrix.}
 \usage{
-calc.sgv(nblocks, blk.sizes, vmat)
+calc.sgv(nblocks = NULL, vmat)
 }
 \arguments{
 \item{nblocks}{Number of blocks in the matrix.}
 
-\item{blk.sizes}{A vector containing the dimension of each block.}
-
 \item{vmat}{The blocked covariance matrix}
+
+\item{blk.sizes}{A vector containing the dimension of each block.}
 }
 \value{
 The SGV of the covariance matrix \code{vmat}.
