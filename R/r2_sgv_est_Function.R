@@ -42,24 +42,32 @@ is.CompSym = function(mat, tol = 0.00001){
 
 calc.sgv <- function(nblocks=NULL, vmat){
 
+  # lme allows the user to input a list of matrices directly
+  # if this is done, computation-time is considerably lessened
+
   if(class(vmat) != 'list'){
 
-    bmat = vmat
+    # initialize a matrix list and a starting point
+
     mlist = list()
+    start = 1
 
-    for(i in 1:nblocks){
+    # loop through the matrix blocks
 
-      if (i < nblocks){
+    for(i in seq(nblocks)){
 
-        stop = min(which(bmat[1,]==0))-1
+      # the stopping point is determined by the first zero
+      # that follows after the positive real numbers
+      # in the variance-covariance matrix. At each iteration,
+      # update the starting and stopping points using previous
 
-        mlist[[i]] = as.matrix(bmat[1:stop,1:stop])
+      stop = ifelse(i < nblocks,
+                    which(vmat[start, start:ncol(vmat)]==0)[1] + (start-2),
+                    nrow(vmat))
 
-        bmat = bmat[-(1:stop), -(1:stop)]
+      mlist[[i]] = as.matrix(vmat[start:stop,start:stop])
 
-      }
-
-      if (i == nblocks) mlist[[i]] = bmat
+      start = stop + 1
 
     }
 
@@ -68,7 +76,6 @@ calc.sgv <- function(nblocks=NULL, vmat){
     mlist = vmat
 
   }
-
 
   sgv = lapply(mlist, function(mat){ log(det(mat)) / nrow(mat)})
 
