@@ -2,6 +2,12 @@
 
 export(calc.sgv)
 export(cmp.R2)
+export(glmPQL)
 export(is.CompSym)
 export(make.partial.C)
 export(r2beta)
+export(r2beta.glm)
+export(r2beta.glmmPQL)
+export(r2beta.lm)
+export(r2beta.lme)
+export(r2beta.lmerMod)

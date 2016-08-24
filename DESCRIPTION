@@ -6,7 +6,8 @@ Version: 0.1.0
 Authors@R: person("Byron", "Jaeger", email = "byron.jaeger@gmail.com", role = c("aut", "cre"))
 Description: This package contains functions to compute model R squared and
     semi-partial R squared for the linear and generalized linear mixed model
-    (LMM and GLMM). The R squared measure from Edwards et.al (2008) is extended
+    (LMM and GLMM). Generalized linear models (GLM's) are also supported.
+    The R squared measure from Edwards et.al (2008) is extended
     to the GLMM using penalized quasi-likelihood (PQL) estimation (see Jaeger
     et al. 2016). Three methods of computation are provided:
     (1) The Kenward-Roger approach*,
@@ -28,7 +29,6 @@ Imports:
     mgcv,
     lmerTest,
     Matrix,
-    AICcmodavg,
     pbkrtest,
     afex,
     dplyr

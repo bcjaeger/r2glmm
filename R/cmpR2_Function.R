@@ -45,6 +45,8 @@ cmp.R2 = function(c, x, SigHat, beta, method, obsperclust, nclusts){
 
   # Compute the R2 statistic
 
+  if(toupper(method)=='LM') ddf = num.obs - length(beta)
+
   if(toupper(method)=='NSJ') ddf = num.obs - 1
 
   if(toupper(method)=='SGV'){

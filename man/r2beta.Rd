@@ -4,7 +4,7 @@
 \alias{r2beta}
 \title{r2beta}
 \usage{
-r2beta(model, partial = T, method = "kr")
+r2beta(model, partial = T, method)
 }
 \arguments{
 \item{model}{a fitted mermod, lme, or glmmPQL model.}
@@ -20,26 +20,31 @@ if \code{method} = 'kr', then the Kenward Roger approach is applied.
 This option is only available for \code{\link{lme}} models.
 if \code{method} = 'nsj',then the Nakagawa and Schielzeth approach
 is applied. This option is available for
-\code{\link{lmer}} and \code{\link{lme}} objects.}
+\code{\link{lmer}} and \code{\link{lme}} objects.
+if \code{method} = 'lm', the classical R squared from the
+linear model is computed. This method should only be used
+on glm and lm object.}
 }
 \value{
 A dataframe containing the model F statistic, numerator
   and denominator degrees of freedom, non-centrality parameter,
-  and R squared statistic. If partial = TRUE, then the dataframe
-  also contains partial R squared statistics for all fixed effects
-  in the model.
+  and R squared statistic with 95% confidence limits.
+  If partial = TRUE, then the dataframe also contains partial R
+  squared statistics for all fixed effects in the model.
 }
 \description{
 Computes coefficient of determination (R squared) from
-edwards et al., 2008. Currently implemented for linear mixed models with
+edwards et al., 2008 and the generalized R squared from Jaeger et al., 2016.
+Currently implemented for linear mixed models with
 \code{\link{lmer}} and \code{\link{lme}} objects. For
-generalized linear mixed models, \code{\link{glmmPQL}} objects
-must be used with \code{method} = 'sgv'.
+generalized linear mixed models, only \code{\link{glmmPQL}} are supported.
 }
 \examples{
 library(nlme)
 library(lme4)
 data(Orthodont)
+
+# Linear mixed models
 mermod = lmer(distance ~ age*Sex + (1|Subject), data = Orthodont)
 lmemod = lme(distance ~ age*Sex, random = ~1|Subject, data = Orthodont)
 
@@ -53,6 +58,20 @@ r2beta(lmemod, method = 'sgv')
 # The marginal R squared by Nakagawa and Schielzeth (extended by Johnson)
 r2beta(mermod, method = 'nsj')
 
+linear and generalized linear models
+
+library(datasets)
+dis = data.frame(discoveries)
+dis$year = 1:nrow(dis)
+
+lmod = lm(discoveries ~ year + I(year^2), data = dis)
+glmod = glm(discoveries ~ year + I(year^2), family = 'poisson', data = dis)
+
+# Using an inappropriate link function (normal) leads to
+# a poor fit relative to the poisson link function.
+
+r2beta(lmod)
+r2beta(glmod)
 
 # PQL models
 # Currently only residual degrees of freedom supported
