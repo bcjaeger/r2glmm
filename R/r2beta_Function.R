@@ -60,7 +60,7 @@
 #' # The marginal R squared by Nakagawa and Schielzeth (extended by Johnson)
 #' r2beta(mermod, method = 'nsj')
 #'
-#' linear and generalized linear models
+#' # linear and generalized linear models
 #'
 #' library(datasets)
 #' dis = data.frame(discoveries)
@@ -76,22 +76,19 @@
 #' r2beta(glmod)
 #'
 #' # PQL models
-#' # Currently only residual degrees of freedom supported
+#' # Currently only SGV method is supported
 #' library(MASS)
 #' PQL_bac = glmmPQL(y ~ trt + I(week > 2), random = ~ 1 | ID,
-#'                   family = binomial, data = bacteria, verbose = F)
+#'                   family = binomial, data = bacteria,
+#'                   verbose = FALSE)
 #'
 #' r2beta(PQL_bac, method='sgv')
 #'
-#' library(mmm)
-#' data("multiLongCount")
-#' PQL_cnt = glmmPQL(resp1~X*time, random = ~1+time|ID,
-#'                   family='poisson', data = multiLongCount)
-#' r2beta(PQL_cnt, method = 'sgv')
+#' @rdname r2beta
 #' @export r2beta
 #------------------------------------------------------------------------------#
 
-r2beta <- function(model, partial=T, method){
+r2beta <- function(model, partial=TRUE, method){
   UseMethod('r2beta')
 }
 

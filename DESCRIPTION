@@ -1,6 +1,6 @@
 Package: r2glmm
 Type: Package
-Title: Computes R squared for mixed (multilevel) models (LMMs and GLMMs).
+Title: Computes R squared for mixed (multilevel) models (LMMs and GLMMs)
 Date: 2016-05-28
 Version: 0.1.0
 Authors@R: person("Byron", "Jaeger", email = "byron.jaeger@gmail.com", role = c("aut", "cre"))
@@ -9,33 +9,32 @@ Description: This package contains functions to compute model R squared and
     (LMM and GLMM). Generalized linear models (GLM's) are also supported.
     The R squared measure from Edwards et.al (2008) is extended
     to the GLMM using penalized quasi-likelihood (PQL) estimation (see Jaeger
-    et al. 2016). Three methods of computation are provided:
-    (1) The Kenward-Roger approach*,
-    (2) The method introduced by Nakagawa and Schielzeth (2013)**, and
-    (3) an approach using standardized generalized variance (SGV)
-    that can be used for both mean model and covariance model selection.
+    et al. 2016). The three methods of computation are described as follows.
+    Firstly, The Kenward-Roger approach. Due to some inconsistency between
+    the pbkrtest package and the glmmPQL function, the Kenward-Roger approach
+    in the r2glmm package is limited to the LMM. Secondly, The method introduced
+    by Nakagawa and Schielzeth (2013). The r2glmm package only computes marginal
+    R squared for the LMM and does not generalize the statistic to the GLMM;
+    however, confidence limits may be computed for this marginal R squared in
+    the LMM using this package. Lastly, an approach using standardized
+    generalized variance (SGV) can be used for covariance model selection.
     Confidence limits for semi partial R squared and model R squared are
-    computed for each of the methods listed.
-    Instructions for installation:
-    After installing the devtools package, run this code in the console:
-    devtools::install_github('bcjaeger/r2glmm')
-    *Due to some inconsistency between the pbkrtest package and the glmmPQL
-    function, the Kenward-Roger approach in the r2glmm package is limited to
-    the LMM.
-    **The r2glmm package only computes marginal R squared for the LMM and
-    does not generalize the statistic to the GLMM; however, confidence limits
-    may be computed for this marginal R squared in the LMM using this package
+    computed for each of the methods listed. To install the package,
+    first install the devtools package, and run this code in the console:
+    devtools::install_github('bcjaeger/r2glmm').
 Imports:
     mgcv,
     lmerTest,
     Matrix,
     pbkrtest,
+    ggplot2,
     afex,
+    stats,
+    MASS,
     dplyr
 Suggests:
     lme4,
     nlme,
-    MASS,
     testthat
 License: GPL-2
 LazyData: TRUE

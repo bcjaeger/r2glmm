@@ -1,11 +1,11 @@
 
-#' @export r2beta.lm
+#' @export
 
-r2beta.lm <- function(model, partial = T, method = NULL){
+r2beta.lm <- function(model, partial=TRUE, method){
 
-    beta = coef(model)
+    beta = stats::coef(model)
     p = length(beta)
-    X = model.matrix(model)
+    X = stats::model.matrix(model)
     SigHat = summary(model)$sigma^2
 
     # C matrix defines the Wald Test for Fixed Effects
@@ -25,8 +25,7 @@ r2beta.lm <- function(model, partial = T, method = NULL){
     }
 
     # Compute the specified R2
-    r2=lapply(C, FUN=cmp.R2, x=X, SigHat=SigHat, beta=beta, method='lm',
-              obsperclust=obsperclust, nclusts=nclusts)
+    r2=lapply(C, FUN=cmp_R2, x=X, SigHat=SigHat, beta=beta, method='lm')
 
     # initialize a dataframe to hold results
     R2 = data.frame(Effect = names(r2))
@@ -36,10 +35,11 @@ r2beta.lm <- function(model, partial = T, method = NULL){
       R2[,i] = as.vector(unlist(lapply(r2, function(x) x[i])))
     }
 
-    R2 = mutate(R2,
-                lower.CL = qbeta(0.025, v1/2, v2/2, ncp),
-                upper.CL = qbeta(0.975, v1/2, v2/2, ncp)) %>%
-      dplyr::arrange(desc(Rsq))
+    R2 = within(R2, {
+      lower.CL = stats::qbeta(0.025, R2$v1/2, R2$v2/2, R2$ncp)
+      upper.CL = stats::qbeta(0.975, R2$v1/2, R2$v2/2, R2$ncp)
+    } )
+    R2 = R2[order(-R2$Rsq),]
 
     return(R2)
 

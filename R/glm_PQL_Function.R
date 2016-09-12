@@ -66,7 +66,7 @@ glmPQL <- function(glm.mod, niter = 20){
   for (i in seq_len(niter)) {
     fit <- eval(mod.call)
     eta.old <- eta
-    eta <- fitted(fit) + off
+    eta <- stats::fitted(fit) + off
     if (sum((eta - eta.old)^2) < 1e-06 * sum(eta^2))
       break
     mu <- fam$linkinv(eta)
@@ -79,7 +79,7 @@ glmPQL <- function(glm.mod, niter = 20){
 
   attributes(fit$logLik) <- NULL
   fit$call <- fit0$call
-  fit$family <- family
+  fit$family <- fit0$family
   fit$logLik <- as.numeric(NA)
   fit$data = pql.dat
   oldClass(fit) <- c("glmPQL", oldClass(fit))

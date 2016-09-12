@@ -1,18 +1,10 @@
 
-#' @export r2beta.lme
+#' @export
 
-r2beta.lme <- function(model, partial = T, method='sgv'){
-
-  if(!require("stats",quietly=T)) stop("package 'stats' is essential")
-  if(!require("afex",quietly=T)) stop("package 'afex' is essential")
-  if(!require("pbkrtest",quietly=T)) stop("package 'pbkrtest' is essential")
-  if(!require("dplyr",quietly=T)) stop("package 'dplyr' is essential")
-  if(!require("mgcv",quietly=T)) stop("package 'mgcv' is essential")
-  if(!require("MASS",quietly=T)) stop("package 'MASS' is essential")
+r2beta.lme <- function(model, partial=TRUE, method){
 
     # Get model matrices
-    X=stats::model.matrix(eval(model$call$fixed)[-2],
-      data = model$data[ , which(!(names(model$data) %in% c( 'zz','invwt')))])
+    X=stats::model.matrix(eval(model$call$fixed)[-2], data = model$data)
 
     # Get number of observations
     n <- nrow(X)
@@ -31,7 +23,7 @@ r2beta.lme <- function(model, partial = T, method='sgv'){
     if(toupper(method) == 'SGV' | toupper(method) == 'NSJ'){
 
       # Get fixed effects
-      beta = fixef(model)
+      beta = nlme::fixef(model)
       p <- length(beta)
 
       # Get covariance matrix from the model
@@ -41,14 +33,14 @@ r2beta.lme <- function(model, partial = T, method='sgv'){
       if(toupper(method)=='NSJ'){
 
         # NS approach takes the mean of the trace of SigHat
-        SigHat = mean(diag(as.matrix(bdiag(mlist))))
+        SigHat = mean(diag(as.matrix(Matrix::bdiag(mlist))))
 
       }
 
       # SGV approach takes the standardized generalized variance of SigHat
       if(toupper(method)=='SGV'){
 
-        SigHat = calc.sgv(nblocks = nclusts, vmat = mlist)
+        SigHat = calc_sgv(nblocks = nclusts, vmat = mlist)
 
       }
 
@@ -69,8 +61,8 @@ r2beta.lme <- function(model, partial = T, method='sgv'){
       }
 
       # Compute the specified R2
-      r2=lapply(C, FUN=cmp.R2, x=X, SigHat=SigHat, beta=beta, method=method,
-                obsperclust=obsperclust, nclusts=nclusts)
+      r2=lapply(C, FUN=cmp_R2, x=X, SigHat=SigHat, beta=beta,
+                method=method, obsperclust=obsperclust, nclusts=nclusts)
 
       # initialize a dataframe to hold results
       R2 = data.frame(Effect = names(r2))
@@ -81,10 +73,11 @@ r2beta.lme <- function(model, partial = T, method='sgv'){
       }
     }
 
-  R2 = mutate(R2,
-              lower.CL = qbeta(0.025, v1/2, v2/2, ncp),
-              upper.CL = qbeta(0.975, v1/2, v2/2, ncp)) %>%
-    dplyr::arrange(desc(Rsq))
+    R2 = within(R2, {
+      lower.CL = stats::qbeta(0.025, R2$v1/2, R2$v2/2, R2$ncp)
+      upper.CL = stats::qbeta(0.975, R2$v1/2, R2$v2/2, R2$ncp)
+    } )
+    R2 = R2[order(-R2$Rsq),]
 
   return(R2)
 

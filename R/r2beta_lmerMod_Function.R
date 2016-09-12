@@ -1,16 +1,12 @@
 
-#' @export r2beta.lmerMod
 
-r2beta.lmerMod <- function(model, partial = T, method='kr'){
+#' @export
 
-  if(!require("stats",quietly=T)) stop("package 'stats' is essential")
-  if(!require("afex",quietly=T)) stop("package 'afex' is essential")
-  if(!require("pbkrtest",quietly=T)) stop("package 'pbkrtest' is essential")
-  if(!require("dplyr",quietly=T)) stop("package 'dplyr' is essential")
-  if(!require("MASS",quietly=T)) stop("package 'MASS' is essential")
+
+r2beta.lmerMod <- function(model, partial=TRUE, method){
 
     # Get model matrices
-    X = getME(model, 'X')
+    X = lme4::getME(model, 'X')
     n <- nrow(X)
 
     # Get grouping information from the model
@@ -36,10 +32,10 @@ r2beta.lmerMod <- function(model, partial = T, method='kr'){
       # Compute Kenward Roger approximate F test using null model defined above
 
       mc <- pbkrtest::KRmodcomp(model,
-                                update(model, null.form, data = model@frame))$stat
+               stats::update(model, null.form, data = model@frame))$stat
 
       # Compute the R2beta statistic for the full model
-      # Store results in a dataframe r2
+      # Store results in a dataframe
 
       R2 = data.frame(Effect = 'Model',
                       F = mc$Fstat, v1 = mc$ndf, v2 = mc$ddf,
@@ -60,9 +56,14 @@ r2beta.lmerMod <- function(model, partial = T, method='kr'){
         p = p[, c('F', 'num.Df', 'den.Df', 'Effect')]
 
         # Compute partial R2beta statistics for all fixed effects
-        r2part = dplyr::mutate(p, Rsq = (num.Df*F/den.Df) / (1+num.Df*F/den.Df),
-                               ncp = F*num.Df) %>%
-          dplyr::rename(v1 = num.Df, v2 = den.Df)
+        r2part = within(p,{
+          Rsq = (p$num.Df*p$F/p$den.Df) / (1+p$num.Df*p$F/p$den.Df)
+          ncp = p$F*p$num.Df
+        })
+
+
+        names(r2part)[names(r2part)=="num.Df"] <- "v1"
+        names(r2part)[names(r2part)=="den.Df"] <- "v2"
 
         R2 = rbind(R2, r2part)
 
@@ -73,15 +74,18 @@ r2beta.lmerMod <- function(model, partial = T, method='kr'){
     else if (toupper(method) == 'SGV' | toupper(method) == 'NSJ'){
 
       # Get fixed effects estimates
-      beta = fixef(model)
+      beta = lme4::fixef(model)
       p <- length(beta)
 
       # Get random effects design matrix
-      Z = as.matrix(getME(model, 'Z'))
+      Z = as.matrix(lme4::getME(model, 'Z'))
 
       # Get variance component estimates
-      s2e = getME(model, 'sigma')^2
-      G = s2e * as.matrix(getME(model, 'Lambda') %*% getME(model, 'Lambdat'))
+      s2e  = lme4::getME(model, 'sigma')^2
+      lam  = lme4::getME(model, 'Lambda')
+      lamt = lme4::getME(model, 'Lambdat')
+
+      G = s2e * as.matrix(lam %*% lamt)
 
       # Compute estimated covariance matrix
       SigHat = Z%*%G%*%t(Z) + s2e*diag(nrow(Z))
@@ -96,7 +100,7 @@ r2beta.lmerMod <- function(model, partial = T, method='kr'){
       if(toupper(method)=='SGV'){
 
         # SGV approach takes standardized determinant of the model covariance
-        SigHat = calc.sgv(nblocks = nclusts, vmat = SigHat)
+        SigHat = calc_sgv(nblocks = nclusts, vmat = SigHat)
 
       }
 
@@ -114,7 +118,7 @@ r2beta.lmerMod <- function(model, partial = T, method='kr'){
       }
 
       # Compute the specified R2
-      r2=lapply(C, FUN=cmp.R2, x=X, SigHat=SigHat, beta=beta, method=method,
+      r2=lapply(C, FUN=cmp_R2, x=X, SigHat=SigHat, beta=beta, method=method,
                 obsperclust=obsperclust, nclusts=nclusts)
 
       # initialize a dataframe to hold results
@@ -130,10 +134,11 @@ r2beta.lmerMod <- function(model, partial = T, method='kr'){
   # Calculate confidence limits with the non-central beta quantile function.
   # Arrange the resulting dataframe from highest to lowest R^2 values.
 
-  R2 = mutate(R2,
-              lower.CL = qbeta(0.025, v1/2, v2/2, ncp),
-              upper.CL = qbeta(0.975, v1/2, v2/2, ncp)) %>%
-    dplyr::arrange(desc(Rsq))
+    R2 = within(R2, {
+      lower.CL = stats::qbeta(0.025, R2$v1/2, R2$v2/2, R2$ncp)
+      upper.CL = stats::qbeta(0.975, R2$v1/2, R2$v2/2, R2$ncp)
+    } )
+    R2 = R2[order(-R2$Rsq),]
 
   return(R2)
 
