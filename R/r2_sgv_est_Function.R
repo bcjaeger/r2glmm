@@ -12,7 +12,6 @@
 #' is.CompSym(csmat)
 #' @export is.CompSym
 
-
 is.CompSym = function(mat, tol = 0.00001){
 
   if(length(mat)==1) {
@@ -31,16 +30,16 @@ is.CompSym = function(mat, tol = 0.00001){
 #' Compute the standardized generalized variance (SGV) of a blocked diagonal matrix.
 #'
 #' @param nblocks Number of blocks in the matrix.
-#' @param blk.sizes  A vector containing the dimension of each block.
 #' @param vmat The blocked covariance matrix
 #' @return The SGV of the covariance matrix \code{vmat}.
 #' @examples
+#' library(Matrix)
 #' v1 = matrix(c(1,0.5,0.5,1), nrow = 2)
 #' v2 = matrix(c(1,0.2,0.1,0.2,1,0.3,0.1,0.3,1), nrow = 3)
-#' calc.sgv(nblocks = 2, blk.sizes = c(2,3), vmat = bdiag(v1,v2))
-#' @export calc.sgv
+#' calc_sgv(nblocks = 2, vmat = Matrix::bdiag(v1,v2))
+#' @export calc_sgv
 
-calc.sgv <- function(nblocks=NULL, vmat){
+calc_sgv <- function(nblocks=NULL, vmat){
 
   # lme allows the user to input a list of matrices directly
   # if this is done, computation-time is considerably lessened
@@ -77,7 +76,13 @@ calc.sgv <- function(nblocks=NULL, vmat){
 
   }
 
-  sgv = lapply(mlist, function(mat){ log(det(mat)) / nrow(mat)})
+  sgv = try(lapply(mlist, function(mat){ log(det(mat)) / nrow(mat)}))
+
+  if(class(sgv)=="try-error"){
+
+    stop('SGV is non-finite. Consider rescaling outcomes and Predictors')
+
+  }
 
   # Back transform from log scale after taking mean of log sgvs
   # This gives the geometric mean of the sgv of the blocks
@@ -112,66 +117,6 @@ calc.sgv <- function(nblocks=NULL, vmat){
 #' family = binomial, data = bacteria, verbose = F)
 #' r2.sgv(PQL_mod)
 
-# r2.sgv <- function(model, adj = T){
-#
-#   if(!require("Matrix",quietly=T)) stop("package 'Matrix' is essential")
-#   if(!require("mgcv",quietly=T)) stop("package 'mgcv' is essential")
-#   if(!require("AICcmodavg",quietly=T)) stop("package 'AICcmodavg' is essential")
-#
-#   # Get fixed effects
-#   beta = fixef(model)
-#   p <- length(beta)
-#
-#   if(any(c('merModLmerTest', 'lmerMod') %in% class(model))){
-#
-#     s2e = getME(model, 'sigma')^2
-#     X = getME(model, 'X')
-#     n = nrow(X)
-#     Z = as.matrix(lme4::getME(model, 'Z'))
-#     G = as.matrix(s2e * getME(model, 'Lambda') %*% getME(model, 'Lambdat'))
-#
-#     # Covariance Matrix from the model
-#     SigHat = Z%*%G%*%t(Z) + s2e*diag(nrow(Z))
-#
-#     clust.id = names(model@flist)[ length(model@flist) ]
-#     obsperclust = as.numeric(table(model@frame[,clust.id]))
-#     nclusts = length(obsperclust)
-#
-#     SGV = calc.sgv(nblocks = nclusts, blk.sizes = obsperclust, vmat = SigHat)
-#
-#   } else if('lme' %in% class(model)){
-#
-#     X=stats::model.matrix(eval(model$call$fixed)[-2],
-#       data = model$data[,which( !(names(model$data)%in%c('zz','invwt')) )])
-#     n <- nrow(X)
-#
-#     # Get grouping information from the model
-#     clust.id = names(summary(model)$groups)[1]
-#     obsperclust = as.numeric(table(model$data[,clust.id]))
-#     nclusts = length(obsperclust)
-#
-#     SGV = calc.sgv(nblocks = nclusts, blk.sizes = obsperclust,
-#       vmat = bdiag(extract.lme.cov2(model, model$data, start.level=1)[['V']]))
-#   }
-#
-#   # Use Helland's formula from Helland (1984)
-#   # with SGV instead of sigma^2 to form R^2_{SGV}
-#
-#   SumSq = beta %*% var(X) %*% beta
-#   r2 = as.numeric(SumSq / (SumSq + SGV))
-#
-#   if(adj==T){
-#
-#     nprms = AICcmodavg::AICc(model, return.K = T)
-#     const = n - mean(obsperclust)
-#     r2adj = 1 - (1 - r2) * (const-1) / (const - nprms - 1)
-#     r2 = c('r2sgv' = r2, 'r2sgv.adj' = r2adj)
-#
-#   }
-#
-#   return(r2)
-#
-# }
 
 
 

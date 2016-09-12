@@ -1,0 +1,99 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "README-"
+)
+```
+
+# r2glmm
+
+This package computes model and semi partial R squared with confidence limits for the linear and generalized linear mixed model (LMM and GLMM). The R squared measure from Edwards et.al (2008) is extended to the GLMM using penalized quasi-likelihood (PQL) estimation (see Jaeger et al. 2016).
+
+* Why use this package?
+
+The $R^2$ statistic is a well known tool that describes a statistical models goodness-of-fit. $R^2$ may be interpreted as a measurement of the proportion of variance in the data explained by the fitted model. This quantity is often of interest for investigators in social and biological sciences. Since the measure is standardized, model $R^2$ can be compared across studies for similar models. Thus, the $R^2$ may be used for meta-analyses. Semi-partial $R^2$ can be used to provide standardized measures of effect size for individual predictors, and allow investigators to select a set of predictors based on both statistical significance and relative importance.
+
+Currently information criteria dominate the applied practice of selecting the most parsimonious mixed model. These criteria provide guidance, but cannot be used to measure goodness-of-fit. Further, they can only be used to compare models fitted to the same data. Lastly, the information criteria do not allow investigators to assess individual fixed predictors. Thus, it is beneficial to apply the information criteria in conjunction with $R^2$ statistics when conducting statistical inference on mixed models.
+
+* Instructions for installation:
+
+Currently, the r2glmm package is available at my github site. After installing and loading the devtools package, run this code from the R console:
+
+devtools::install_github('bcjaeger/r2glmm')
+
+The files should then be downloaded and installed.
+
+* How to use this package
+
+The main function in this package is called r2beta. A user may fit a mixed model for one of the supported model types and then apply the r2beta function using the specified model as input. Additionally, the investigator may specify whether semi-partial $R^2$ are computed (they are by default) and what type of method to employ for computation. Three methods of computation are currently provided:
+
+(1) an approach using standardized generalized variance (SGV) that can be used for covariance model selection. The SGV approach chooses 
+
+
+```{r}
+
+library(lme4)
+library(nlme)
+library(r2glmm)
+
+data(Orthodont)
+
+# Linear mixed models
+mermod = lmer(formula = distance ~ age*Sex + (1|Subject), data = Orthodont)
+
+# Compute the R2 statistic using the SGV method
+# This method and others are explained below
+# Semi-partial R Squared are calculated by default
+sgv_r2 = r2beta(mermod, method = 'sgv')
+
+# Clean up the output a bit
+nmrc = sapply(sgv_r2,is.numeric)
+sgv_r2[,nmrc] = apply(sgv_r2[,nmrc], 2, round, 4)
+
+sgv_r2
+
+
+```
+
+(2) The Kenward-Roger approach applies the small sample approximation to the F statistic using the pbkrtest package, and is recommended for selecting fixed effects. Due to some inconsistency between the pbkrtest package and the glmmPQL function, the Kenward-Roger approach in the r2glmm package is limited to the LMM.
+
+```{r}
+
+# Compute the R2 statistic using the Kenward-Roger Approach.
+(kr_r2 = r2beta(mermod, method = 'kr', partial = FALSE))
+
+
+```
+
+(3) The method introduced by Nakagawa and Schielzeth (2013) (see note B) computes the marginal R squared described by Nakagawa and Schielzeth, which was later modified by Johnson (2014). Additionally, this package computes confidence limits and semi-partial $R^2$ for the marginal coefficient of determination. The r2glmm package only computes marginal R squared for the LMM and does not generalize the statistic to the GLMM.
+
+```{r}
+
+# Compute the R2 statistic using the Kenward-Roger Approach.
+nsj_r2 = r2beta(mermod, method = 'nsj', partial = TRUE)
+
+# Clean up the output a bit
+nmrc = sapply(nsj_r2,is.numeric)
+nsj_r2[,nmrc] = apply(nsj_r2[,nmrc], 2, round, 4)
+
+nsj_r2
+
+
+# The MuMIn package computes the marginal R squared for fixed effects,
+# but does not compute confidence limits or semi-partials
+
+MuMIn::r.squaredGLMM(mermod)
+
+
+```
+
+
+
+
