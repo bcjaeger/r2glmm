@@ -29,6 +29,9 @@
 #' summary(mod.pql)
 #' summary(linfit <- lm(discoveries~year+I(year^2), data = dat))
 #'
+#' r2beta(mod.pql)
+#' r2beta(linfit)
+#'
 #' @export glmPQL
 
 glmPQL <- function(glm.mod, niter = 20){

@@ -4,7 +4,7 @@
 \alias{r2beta}
 \title{r2beta}
 \usage{
-r2beta(model, partial = TRUE, method)
+r2beta(model, partial = TRUE, method = "sgv")
 }
 \arguments{
 \item{model}{a fitted mermod, lme, or glmmPQL model.}

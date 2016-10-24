@@ -1,26 +1,26 @@
 Package: r2glmm
 Type: Package
-Title: Computes R squared for Mixed (multilevel) Models
-Date: 2016-05-28
+Title: Computes R Squared for Mixed (Multilevel) Models
+Date: 2016-09-14
 Version: 0.1.0
 Authors@R: person("Byron", "Jaeger", email = "byron.jaeger@gmail.com", role = c("aut", "cre"))
 Description: The model R squared and semi-partial R squared for the linear and
     generalized linear mixed model (LMM and GLMM) are computed with confidence
-    limits. The R squared measure from Edwards et.al (2008) is extended
-    to the GLMM using penalized quasi-likelihood (PQL) estimation (see Jaeger
-    et al. 2016). Three methods of computation are provided and described as follows.
-    Firstly, The Kenward-Roger approach. Due to some inconsistency between
-    the pbkrtest package and the glmmPQL function, the Kenward-Roger approach
-    in the r2glmm package is limited to the LMM. Secondly, The method introduced
-    by Nakagawa and Schielzeth (2013) then later extended by Johnson (2014).
-    The r2glmm package only computes marginal R squared for the LMM and does
+    limits. The R squared measure from Edwards et.al (2008) <DOI:10.1002/sim.3429>
+    is extended to the GLMM using penalized quasi-likelihood (PQL) estimation
+    (see Jaeger et al. 2016 <DOI:10.1080/02664763.2016.1193725>). Three methods
+    of computation are provided and described as follows. Firstly, The
+    Kenward-Roger approach. Due to some inconsistency between the 'pbkrtest'
+    package and the 'glmmPQL' function, the Kenward-Roger approach in the
+    'r2glmm' package is limited to the LMM. Secondly, The method introduced
+    by Nakagawa and Schielzeth (2013) <DOI:10.1111/j.2041-210x.2012.00261.x>
+    and later extended by Johnson (2014) <DOI:10.1111/2041-210X.12225>.
+    The 'r2glmm' package only computes marginal R squared for the LMM and does
     not generalize the statistic to the GLMM; however, confidence limits and
-    semi-partial R squared for fixed effects may be computed for this marginal
-    R squared in the LMM using this package. Lastly, an approach using
-    standardized generalized variance (SGV) can be used for covariance model
-    selection. To install the package, first install the devtools package,
-    and run this code in the R console:
-    devtools::install_github('bcjaeger/r2glmm').
+    semi-partial R squared for fixed effects are useful additions. Lastly, an
+    approach using standardized generalized variance (SGV) can be used for
+    covariance model selection. Package installation instructions can be found
+    in the readme file.
 Imports:
     mgcv,
     lmerTest,

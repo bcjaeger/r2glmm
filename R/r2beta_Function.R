@@ -88,7 +88,7 @@
 #' @export r2beta
 #------------------------------------------------------------------------------#
 
-r2beta <- function(model, partial=TRUE, method){
+r2beta <- function(model, partial=TRUE, method='sgv'){
   UseMethod('r2beta')
 }
 

@@ -65,7 +65,6 @@ cmp_R2 = function(c, x, SigHat, beta, method, obsperclust=NULL, nclusts=NULL){
 
       ddf = num.obs - 1
 
-      print('Number of observations per cluster is greater than the number of clusters. Setting ddf to n-1.')
     }
 
     if( m > 0){
