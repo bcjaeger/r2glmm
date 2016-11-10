@@ -4,7 +4,7 @@
 \alias{r2beta}
 \title{r2beta}
 \usage{
-r2beta(model, partial = TRUE, method = "sgv")
+r2beta(model, partial = TRUE, method = "sgv", data = NULL)
 }
 \arguments{
 \item{model}{a fitted mermod, lme, or glmmPQL model.}
@@ -24,6 +24,10 @@ is applied. This option is available for
 if \code{method} = 'lm', the classical R squared from the
 linear model is computed. This method should only be used
 on glm and lm object.}
+
+\item{data}{The data used by the fitted model. This argument is required
+for models with special expressions in their formula, such as
+offset, log, cbind(sucesses, trials), etc.}
 }
 \value{
 A dataframe containing the model F statistic, numerator

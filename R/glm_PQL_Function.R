@@ -2,6 +2,9 @@
 #' Compute PQL estimates for fixed effects from a generalized linear model.
 #' @param glm.mod a generalized linear model fitted with the glm function.
 #' @param niter maximum number of iterations allowed in the PQL algorithm.
+#' @param data The data used by the fitted model. This argument is required
+#'        for models with special expressions in their formula, such as
+#'        offset, log, cbind(sucesses, trials), etc.
 #' @return A glmPQL object (i.e. a linear model using pseudo outcomes).
 #' @examples
 #'
@@ -34,14 +37,20 @@
 #'
 #' @export glmPQL
 
-glmPQL <- function(glm.mod, niter = 20){
+glmPQL <- function(glm.mod, niter = 20, data = NULL){
 
   if (!c('GLM')%in%toupper(class(glm.mod))){
     stop('only models with class GLM are supported')
   }
 
   fit0 <- glm.mod
-  pql.dat = data.frame(fit0$data)
+
+  if(is.null(data)){
+    pql.dat = data.frame(fit0$data)
+  } else {
+    pql.dat = data
+  }
+
   mod.call <- fit0$call
   mod.form=mod.call[['formula']]
   w <- fit0$prior.weights

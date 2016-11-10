@@ -2,10 +2,11 @@
 
 #' @export
 
-r2beta.glmerMod <- function(model,  partial=TRUE, method='sgv'){
+r2beta.glmerMod <- function(model, partial=TRUE, method='sgv', data = NULL){
+
+  if(is.null(data)) data = model@frame
 
   fam = model@resp$family
-  data = model@frame
   frm = as.list(model@call)[['formula']]
   wz=NULL
 
@@ -38,6 +39,22 @@ r2beta.glmerMod <- function(model,  partial=TRUE, method='sgv'){
 
   }
 
-  return(r2beta(fit, method = method, partial = partial))
+  # The weighted adjustment is helpful for binary random variables
+  # It should not be applied to poisson random variables
+
+  if (fam$family == "binomial"){
+
+    mdf = fit@frame
+
+    adj = mdf[['(weights)']]^(-1/2)
+    nmrc=sapply(mdf, is.numeric)
+    mdf[,nmrc] = adj * mdf[,nmrc]
+    fit_fin = lme4::lmer(eval(fit@call[[2]]), data = mdf)
+
+  } else {
+    fit_fin = fit
+  }
+
+  return(r2beta(fit_fin, method = method, partial = partial))
 
 }

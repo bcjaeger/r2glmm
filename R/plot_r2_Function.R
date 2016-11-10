@@ -1,9 +1,10 @@
 
 
-#' Generate partial contrast matrices
+#' Visualize standardized effect sizes and model R squared
 #'
-#' @param r2ob An r2 object from the r2beta function.
+#' @param x An R2 object from the r2beta function.
 #' @param txtsize The text size of the axis labels.
+#' @param ... Arguments to be passed to methods
 #' @return A visual representation of the model and semi-partial R squared
 #' from the r2 object provided.
 #' @examples
@@ -17,14 +18,14 @@
 #'
 #' r2 = r2beta(model=lmemod,partial=TRUE,method='sgv')
 #'
-#' plot_r2(r2ob=r2)
-#' @export plot_r2
+#' plot(x=r2)
+#' @export
 
-plot_r2 <- function(r2ob, txtsize = 11){
+plot.R2 <- function(x, txtsize = 11, ...){
 
-  r2ob$Effect=with(r2ob, factor(Effect, ordered=T,levels = Effect))
+  x$Effect=with(x, factor(Effect, ordered=T,levels = Effect))
 
-  ggplot2::ggplot(data = r2ob, ggplot2::aes_string(x = 'Effect', y = 'Rsq'))+
+  ggplot2::ggplot(data = x, ggplot2::aes_string(x = 'Effect', y = 'Rsq'))+
     ggplot2::geom_point()+
     ggplot2::geom_errorbar(
       ggplot2::aes_string(ymin='lower.CL',ymax='upper.CL'),width=1/5)+
@@ -42,5 +43,15 @@ plot_r2 <- function(r2ob, txtsize = 11){
 
 }
 
+#' Print the contents of an R2 object
+#' @export
+print.R2 <- function(r2){
 
+  # Clean up the output a bit
+  nmrc = sapply(r2,is.numeric)
+  r2[,nmrc] = apply(r2[,nmrc], 2, round, 3)
+
+  print.data.frame(r2[,c('Effect', 'Rsq', 'upper.CL', 'lower.CL')])
+
+}
 

@@ -1,7 +1,7 @@
 
 #' @export
 
-r2beta.lm <- function(model, partial=TRUE, method){
+r2beta.lm <- function(model, partial=TRUE, method='sgv', data = NULL){
 
     beta = stats::coef(model)
     p = length(beta)
@@ -40,6 +40,8 @@ r2beta.lm <- function(model, partial=TRUE, method){
       upper.CL = stats::qbeta(0.975, R2$v1/2, R2$v2/2, R2$ncp)
     } )
     R2 = R2[order(-R2$Rsq),]
+
+    class(R2) <- c('R2', 'data.frame')
 
     return(R2)
 

@@ -4,12 +4,16 @@
 \alias{glmPQL}
 \title{Compute PQL estimates for fixed effects from a generalized linear model.}
 \usage{
-glmPQL(glm.mod, niter = 20)
+glmPQL(glm.mod, niter = 20, data = NULL)
 }
 \arguments{
 \item{glm.mod}{a generalized linear model fitted with the glm function.}
 
 \item{niter}{maximum number of iterations allowed in the PQL algorithm.}
+
+\item{data}{The data used by the fitted model. This argument is required
+for models with special expressions in their formula, such as
+offset, log, cbind(sucesses, trials), etc.}
 }
 \value{
 A glmPQL object (i.e. a linear model using pseudo outcomes).

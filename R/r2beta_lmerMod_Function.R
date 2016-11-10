@@ -2,7 +2,10 @@
 
 #' @export
 
-r2beta.lmerMod <- function(model, partial=TRUE, method){
+
+r2beta.lmerMod <- function(model, partial=TRUE, method='sgv', data = NULL){
+
+  if(is.null(data)) data = model@frame
 
   # Get model matrices
   X = lme4::getME(model, 'X')
@@ -10,7 +13,7 @@ r2beta.lmerMod <- function(model, partial=TRUE, method){
 
   # Get grouping information from the model
   clust.id = names(model@flist)[ length(model@flist) ]
-  obsperclust = as.numeric(table(model@frame[ , clust.id ]))
+  obsperclust = as.numeric(table(data[ , clust.id ]))
   mobs = mean(obsperclust)
   nclusts = length(obsperclust)
 
@@ -133,6 +136,8 @@ r2beta.lmerMod <- function(model, partial=TRUE, method){
     upper.CL = stats::qbeta(0.975, R2$v1/2, R2$v2/2, R2$ncp)
   } )
   R2 = R2[order(-R2$Rsq),]
+
+  class(R2) <- c('R2', 'data.frame')
 
   return(R2)
 

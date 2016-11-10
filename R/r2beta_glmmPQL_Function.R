@@ -1,16 +1,18 @@
 
 #' @export
 
-r2beta.glmmPQL <- function(model, partial=TRUE, method){
+r2beta.glmmPQL <- function(model, partial=TRUE, method='sgv', data = NULL){
+
+  if(is.null(data)) data = model$data
 
   # Get model matrices
   X=stats::model.matrix(eval(model$call$fixed)[-2],
-      data = model$data[,which( !(names(model$data)%in%c('zz','invwt')) )])
+      data = data[,which( !(names(data)%in%c('zz','invwt')) )])
   n <- nrow(X)
 
   # Get grouping information from the model
   clust.id = names(summary(model)$groups)[1]
-  obsperclust = as.numeric(table(model$data[,clust.id]))
+  obsperclust = as.numeric(table(data[,clust.id]))
   mobs = mean(obsperclust)
   nclusts = length(obsperclust)
 
@@ -24,7 +26,7 @@ r2beta.glmmPQL <- function(model, partial=TRUE, method){
 
   # Get covariance matrix from the model
 
-  mlist = mgcv::extract.lme.cov2(model, model$data, start.level=1)[['V']]
+  mlist = mgcv::extract.lme.cov2(model, data, start.level=1)[['V']]
 
   SigHat = calc_sgv(nblocks = nclusts, vmat = mlist)
 
@@ -61,6 +63,8 @@ r2beta.glmmPQL <- function(model, partial=TRUE, method){
     upper.CL = stats::qbeta(0.975, R2$v1/2, R2$v2/2, R2$ncp)
   } )
   R2 = R2[order(-R2$Rsq),]
+
+  class(R2) <- c('R2', 'data.frame')
 
   return(R2)
 
