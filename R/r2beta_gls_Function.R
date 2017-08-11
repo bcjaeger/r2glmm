@@ -2,7 +2,7 @@
 #' @export
 
 r2beta.gls <- function(model, partial=TRUE, method='sgv',
-                       wtdbin = FALSE, data = NULL){
+                       data = NULL){
 
 
   # The Kenward Roger Approach can't be applied to these models
@@ -105,12 +105,14 @@ r2beta.gls <- function(model, partial=TRUE, method='sgv',
       R2[,i] = as.vector(unlist(lapply(r2, function(x) x[i])))
     }
 
+    R2[2:length(R2)] = lapply(R2[2:length(R2)], as.numeric)
 
-  R2 = within(R2, {
-    lower.CL = stats::qbeta(0.025, R2$v1/2, R2$v2/2, R2$ncp)
-    upper.CL = stats::qbeta(0.975, R2$v1/2, R2$v2/2, R2$ncp)
-  } )
-  R2 = R2[order(-R2$Rsq),]
+    R2 = within(R2, {
+      lower.CL = stats::qbeta(0.025, R2$v1/2, R2$v2/2, R2$ncp)
+      upper.CL = stats::qbeta(0.975, R2$v1/2, R2$v2/2, R2$ncp)
+    } )
+
+    R2 = R2[order(-R2$Rsq),]
 
   class(R2) <- c('R2', 'data.frame')
 

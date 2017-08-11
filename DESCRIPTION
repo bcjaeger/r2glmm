@@ -1,18 +1,18 @@
 Package: r2glmm
 Type: Package
 Title: Computes R Squared for Mixed (Multilevel) Models
-Date: 2016-09-14
-Version: 0.1.1
+Date: 2017-08-04
+Version: 0.1.2
 Authors@R: person("Byron", "Jaeger", email = "byron.jaeger@gmail.com", role = c("aut", "cre"))
 Description: The model R squared and semi-partial R squared for the linear and
     generalized linear mixed model (LMM and GLMM) are computed with confidence
     limits. The R squared measure from Edwards et.al (2008) <DOI:10.1002/sim.3429>
     is extended to the GLMM using penalized quasi-likelihood (PQL) estimation
     (see Jaeger et al. 2016 <DOI:10.1080/02664763.2016.1193725>). Three methods
-    of computation are provided and described as follows. Firstly, The
+    of computation are provided and described as follows. First, The
     Kenward-Roger approach. Due to some inconsistency between the 'pbkrtest'
     package and the 'glmmPQL' function, the Kenward-Roger approach in the
-    'r2glmm' package is limited to the LMM. Secondly, The method introduced
+    'r2glmm' package is limited to the LMM. Second, The method introduced
     by Nakagawa and Schielzeth (2013) <DOI:10.1111/j.2041-210x.2012.00261.x>
     and later extended by Johnson (2014) <DOI:10.1111/2041-210X.12225>.
     The 'r2glmm' package only computes marginal R squared for the LMM and does

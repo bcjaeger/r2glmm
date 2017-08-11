@@ -4,14 +4,25 @@
 \alias{plot.R2}
 \title{Visualize standardized effect sizes and model R squared}
 \usage{
-\method{plot}{R2}(x, txtsize = 11, ...)
+\method{plot}{R2}(x, y = NULL, txtsize = 10, maxcov = 3, r2labs = NULL,
+  r2mthd = "sgv", cor = TRUE, ...)
 }
 \arguments{
 \item{x}{An R2 object from the r2beta function.}
 
+\item{y}{An R2 object from the r2beta function.}
+
 \item{txtsize}{The text size of the axis labels.}
 
-\item{...}{Arguments to be passed to methods}
+\item{maxcov}{Maximum number of covariates to include in the semi-partial plots.}
+
+\item{r2labs}{a character vector containing labels for the models. The labels are printed as subscripts on a covariance model matrix.}
+
+\item{r2mthd}{The method used to compute R2}
+
+\item{cor}{An argument to be passed to the r2dt function. Only relevant if comparing two R2 objects.}
+
+\item{...}{Arguments to be passed to plot}
 }
 \value{
 A visual representation of the model and semi-partial R squared
@@ -33,4 +44,3 @@ r2 = r2beta(model=lmemod,partial=TRUE,method='sgv')
 
 plot(x=r2)
 }
-

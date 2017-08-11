@@ -10,9 +10,15 @@
 #' @examples
 #' make.partial.C(4, 5, 2)
 #' make.partial.C(4, 5, 3)
+#' make.partial.C(4, 5, 2:4)
 #' @export make.partial.C
 make.partial.C = function(rows, cols, index){
+
   x=matrix(0, nrow = rows, ncol = cols)
-  x[index-1, index] = 1
+
+  for(i in index){
+    x[i-1, i] = 1
+  }
+
   return(x)
 }

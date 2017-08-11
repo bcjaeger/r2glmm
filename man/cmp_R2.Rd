@@ -2,8 +2,7 @@
 % Please edit documentation in R/cmpR2_Function.R
 \name{cmp_R2}
 \alias{cmp_R2}
-\title{Compute r2beta with a specified C matrix
-Compute R2 with a specified C matrix}
+\title{Compute R2 with a specified C matrix}
 \usage{
 cmp_R2(c, x, SigHat, beta, method, obsperclust = NULL, nclusts = NULL)
 }
@@ -28,7 +27,6 @@ statistic (F), numerator degrees of freedom (v1), denominator degrees
 of freedom (v2), and the specified r squared value (Rsq)
 }
 \description{
-Compute r2beta with a specified C matrix
 Compute R2 with a specified C matrix
 }
 \examples{
@@ -50,4 +48,3 @@ nclusts = nclusts, method = 'sgv')
 cmp_R2(c=partial.c, x=X, SigHat=SigHat, beta=beta, obsperclust = obsperclust,
 nclusts = nclusts, method = 'sgv')
 }
-

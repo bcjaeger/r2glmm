@@ -1,6 +1,5 @@
 
 
-#' Compute r2beta with a specified C matrix
 #' Compute R2 with a specified C matrix
 #' @param c Contrast matrix for fixed effects
 #' @param x Fixed effects design matrix
@@ -32,23 +31,15 @@
 #' nclusts = nclusts, method = 'sgv')
 #' @export cmp_R2
 
-cmp_R2 = function(c, x, SigHat, beta, method, obsperclust=NULL, nclusts=NULL){
+cmp_R2 = function(c, x, SigHat, beta, method,
+                  obsperclust=NULL, nclusts=NULL){
 
   scalar = !is.matrix(SigHat)
 
   # Compute relevant quantities for degrees of freedom
   rank.c = sum(apply(c, 2, sum))
   num.obs = nrow(x)
-  Xmt = matrix(x, nrow = num.obs)
-
-  # Compute the approximate Wald F Statistic
-  if(scalar){
-    denom = SigHat * as.matrix(c %*% Matrix::solve( crossprod(Xmt) ) %*% t(c))
-  } else {
-    denom = as.matrix(c %*% solve(t(Xmt)%*%Matrix::solve(SigHat)%*%Xmt) %*% t(c))
-  }
-
-  wald = t(c %*% beta) %*% MASS::ginv(denom) %*% c%*%beta / rank.c
+  Xmt = Matrix::Matrix(x, sparse = TRUE)
 
   # Compute the R2 statistic
 
@@ -60,24 +51,51 @@ cmp_R2 = function(c, x, SigHat, beta, method, obsperclust=NULL, nclusts=NULL){
 
     mobs = mean(obsperclust)
     m = nclusts - mobs - 1
-
     if(m <= 0){
-
       ddf = num.obs - 1
-
-    }
-
-    if( m > 0){
+    } else {
       ddf = mobs * (m+1) + (mobs-1)*(mobs-2) / 2
     }
 
   }
 
+  # Compute the approximate Wald F Statistic
+  if(scalar){
+
+    XtXinv <- Matrix::solve(Matrix::crossprod(Xmt))
+    denom = SigHat * (c%*%XtXinv%*%t(c))
+
+  } else {
+
+    XtSX_inv <- Matrix::solve(Matrix::t(Xmt)%*%Matrix::solve(SigHat)%*%Xmt)
+    denom = (c%*% XtSX_inv %*%t(c))
+
+  }
+
+  if(rank.c>1){
+
+    wald = try(as.numeric(
+      t(c %*% beta) %*% Matrix::solve(denom) %*% c%*%beta / rank.c),
+      silent = TRUE
+    )
+
+  } else {
+
+    wald = try(as.numeric(
+      t(c %*% beta) %*% MASS::ginv(as.matrix(denom)) %*% c%*%beta / rank.c)
+    )
+
+  }
+
+
+  if(class(wald)=='try-error')
+    stop('Could not invert adjusted covariance of regression estimates')
+
   ndf = rank.c
   ss = ndf/ddf * wald
   R2 = ss/(1+ss)
 
-  return(c(F = wald, v1 = ndf, v2 = ddf, ncp = wald*ndf, Rsq = R2))
+  c(F = wald,v1 = ndf, v2 = ddf, ncp = wald*ndf, Rsq = R2)
 
 }
 

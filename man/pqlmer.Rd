@@ -42,4 +42,3 @@ summary(merPQL)
 \seealso{
 \code{\link{glmmPQL}}
 }
-

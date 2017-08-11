@@ -1,6 +1,6 @@
 
 #------------------------------------------------------------------------------#
-#' r2beta
+#' r2beta Compute R Squared for Mixed Models
 #'
 #' @description Computes coefficient of determination (R squared) from
 #' edwards et al., 2008 and the generalized R squared from Jaeger et al., 2016.
@@ -25,6 +25,7 @@
 #'            if \code{method} = 'lm', the classical R squared from the
 #'            linear model is computed. This method should only be used
 #'            on glm and lm object.
+#'
 #'
 #' @param data The data used by the fitted model. This argument is required
 #'        for models with special expressions in their formula, such as
@@ -93,7 +94,8 @@
 #' @export r2beta
 #------------------------------------------------------------------------------#
 
-r2beta <- function(model, partial=TRUE, method='sgv', data = NULL){
+r2beta <- function(model, partial=TRUE, method='sgv',
+                   data = NULL){
   UseMethod('r2beta')
 }
 

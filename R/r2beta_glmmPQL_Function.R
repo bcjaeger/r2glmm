@@ -1,7 +1,8 @@
 
 #' @export
 
-r2beta.glmmPQL <- function(model, partial=TRUE, method='sgv', data = NULL){
+r2beta.glmmPQL <- function(model, partial=TRUE, method='sgv',
+                           data = NULL){
 
   if(is.null(data)) data = model$data
 

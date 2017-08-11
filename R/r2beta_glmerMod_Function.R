@@ -2,20 +2,24 @@
 
 #' @export
 
-r2beta.glmerMod <- function(model, partial=TRUE, method='sgv', data = NULL){
+r2beta.glmerMod <- function(model, partial=TRUE, method='sgv',
+                            data = NULL){
 
   if(is.null(data)) data = model@frame
 
   fam = model@resp$family
   frm = as.list(model@call)[['formula']]
-  wz=NULL
+  y = all.vars(stats::update(frm, . ~ 1))
+
+  # Remove missing values (glm does this automatically)
+  data = data[stats::complete.cases(data[,y]), ]
 
   fit0 = stats::glm(lme4::nobars(frm), family = fam, data = data)
 
   eta <- fit0$linear.predictors
 
   data$zz <- eta + fit0$residuals
-  data$wz <- fit0$weights
+  wz=NULL; data$wz <- fit0$weights
 
   niter = 40
 
@@ -39,22 +43,6 @@ r2beta.glmerMod <- function(model, partial=TRUE, method='sgv', data = NULL){
 
   }
 
-  # The weighted adjustment is helpful for binary random variables
-  # It should not be applied to poisson random variables
-
-  if (fam$family == "binomial"){
-
-    mdf = fit@frame
-
-    adj = mdf[['(weights)']]^(-1/2)
-    nmrc=sapply(mdf, is.numeric)
-    mdf[,nmrc] = adj * mdf[,nmrc]
-    fit_fin = lme4::lmer(eval(fit@call[[2]]), data = mdf)
-
-  } else {
-    fit_fin = fit
-  }
-
-  return(r2beta(fit_fin, method = method, partial = partial))
+  return(r2beta(model = fit, method = method, partial = partial))
 
 }

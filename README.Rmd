@@ -11,161 +11,132 @@ knitr::opts_chunk$set(
   fig.path = "README-"
 )
 
-# Change log
-# Version 0.1.1
-# Updated the r2beta function with an optional data argument. Users who wish to use a function (i.e. log(x)) in their model formula must specify the original data frame used by the model when using the r2beta function.
-# Included support for GLMMs fitted using the glmer function from the lme4 package.
-# Incorporated a weighted adjustment for binary mixed models for improved model selection.
-
-
 ```
 
 # r2glmm
 
-This package computes model and semi partial R squared with confidence limits for the linear and generalized linear mixed model (LMM and GLMM). The R squared measure from Edwards et.al (2008) is extended to the GLMM using penalized quasi-likelihood (PQL) estimation (see Jaeger et al. 2016).
+This package computes model and semi partial $R^2$ with confidence limits for the linear and generalized linear mixed model (LMM and GLMM). The $R^2$ measure from Edwards et.al (2008) is extended to the GLMM using penalized quasi-likelihood (PQL) estimation (see Jaeger et al. 2016).
+
+* Changes: Version 0.1.2
+
+1. Optimized computation of matrix inverses and cross-products in order to decrease computation time.
+
+* Changes: Version 0.1.1
+1. Updated the r2beta function with an optional data argument. Users who wish to use a function (i.e. log(x)) in their model formula should specify the original data frame used by the model when using the r2beta function.
+2. Included support for GLMMs fitted using the glmer function from the lme4 package.
+4. Added generic plot and print functions for R2 objects.
+
 
 * Why use this package?
 
-The R Squared statistic is a well known tool that describes goodness-of-fit for a statistical model. In the linear model, R Squared may be interpreted as the proportion of variance in the data explained by the fixed predictors, which is often of interest to investigators in social and biological sciences. Other popular uses of R squared include meta-analyses and standardized measurement of effect sizes using semi-partial R squared. The semi-partial R squared statistic corresponds to a select subset of fixed predictors in a fitted model and measures the relative increase in association between the dependent and independent variables resulting from the inclusion of the specified subset. Semi-partial R squared allow investigators to select a set of predictors based on both statistical significance and relative importance.
+The $R^2$ statistic is a well known tool that describes goodness-of-fit for a statistical model. In the linear model, $R^2$ is interpreted as the proportion of variance in the data explained by the fixed predictors and semi-partial $R^2$ provide standardized measures of effect size for subsets of fixed predictors. In the linear mixed model, numerous definitions of $R^2$ exist and interpretations vary by definition. The r2glmm package computes $R^2$ using three definitions:
 
-Currently information criteria dominate the applied practice of selecting the most parsimonious mixed model. These criteria provide guidance, but cannot be used to measure goodness-of-fit. Further, they can only be used to compare models fitted to the same data. Lastly, the information criteria do not allow investigators to assess individual fixed predictors. Thus, it is beneficial to apply the information criteria in conjunction with R Squared statistics when conducting statistical inference on mixed models.
+1. $R_\beta^2$, a standardized measure of multivariate association between the fixed predictors and the observed outcome. This method was introduced by Edwards et al. (2008)
+2. $R_\Sigma^2$, the proportion of generalized variance explained by the fixed predictors. This method was introduced by Jaeger et al. (2017)
+3. $R_{(m)}^2$, the proportion of variance explained by the fixed predictors. This method was introduced by Nakagawa and Schielzeth (2013) and later modified by Johnson (2014).
+
+Each interpretation can be used for model selection and is helpful for summarizing model goodness-of-fit. While the information criteria are useful tools for model selection, they do not quantify goodness-of-fit, making the $R^2$ statistic an excellent tool to accompany values of AIC and BIC. Additionally, in the context of mixed models, semi-partial $R^2$ and confidence limits are two useful and exclusive features of the r2glmm package.
 
 * Instructions for installation:
 
-Currently, the r2glmm package is available at my github site. After installing and loading the devtools package, run this code from the R console:
+The most up-to-date version of the r2glmm package is available on Github. To download the package from Github, after installing and loading the devtools package, run the following code from the R console:
 
+```{r, eval=FALSE}
 devtools::install_github('bcjaeger/r2glmm')
+```
 
-The files should then be downloaded and installed.
+Alternatively, There is a version of the package available on CRAN. To download the package from CRAN, run the following code from the R console:
+
+```{r, eval=FALSE}
+install.packages('r2glmm')
+```
 
 * How to use this package
 
-The main function in this package is called r2beta. A user may fit a mixed model for one of the supported model types and then apply the r2beta function using the specified model as input. Additionally, the investigator may specify whether semi-partial R Squared are computed (they are by default) and what type of method to employ for computation. Three methods of computation are currently provided:
+The main function in this package is called r2beta. The r2beta function summarizes a mixed model by computing the model $R^2$ statistic and semi-partial $R^2$ statistics for each fixed predictor in the model. The r2glmm package computes $R^2$ using three definitions. Below we list the methods, their interpretation, and an example of their application:
 
-1. An approach using standardized generalized variance (SGV) that can be used for covariance model selection. The SGV approach chooses 
-
+1. $R_\beta^2$, a standardized measure of multivariate association between the fixed predictors and the observed outcome. This statistic is primarily used to select fixed effects in the linear and generalized linear mixed model.
 
 ```{r}
 
 library(lme4)
 library(nlme)
 library(r2glmm)
-
 data(Orthodont)
 
-# Linear mixed models
-mermod = lmer(formula = distance ~ age*Sex + (1|Subject), data = Orthodont)
+# Compute mean models with the r2beta statistic 
+# using the Kenward-Roger approach.
 
-# Compute the R2 statistic using the SGV method
-# This method and others are explained below
-# Semi-partial R Squared are calculated by default
+m1 = lmer(distance ~ age*Sex + (1|Subject), data = Orthodont)
+m2 = lmer(distance ~ age + (1|Subject), data = Orthodont)
 
-r2beta(mermod, method = 'sgv')
+(r2.m1 = r2beta(m1, method = 'kr', partial = T))
+(r2.m2 = r2beta(m2, method = 'kr', partial = T))
 
 ```
 
-2. The Kenward-Roger approach applies the small sample approximation to the F statistic using the pbkrtest package, and is recommended for selecting fixed effects. Due to some inconsistency between the pbkrtest package and PQL estimation, the Kenward-Roger approach is limited to the LMM.
+2. $R_\Sigma^2$, the proportion of generalized variance explained by the fixed predictors. This statistic is primarily used to select a covariance structure in the linear and generalized linear mixed model.
 
 ```{r}
 
-# Compute the R2 statistic using the Kenward-Roger approach.
-r2beta(mermod, method = 'kr', partial = FALSE)
+# m1 has a compound symmetric (CS) covariance structure.
+m1 = lme(distance ~ age*Sex,  ~1|Subject, data = Orthodont)
+
+# m2 is an order 1 autoregressive (AR1) model with
+# gender-specific residual variance estimates.
+m2 = lme(distance ~ age*Sex, data=Orthodont, 
+         correlation = corAR1(form=~1|Subject),
+         weights = varIdent(form=~1|Sex))
+
+# Compare the models
+(r2m1 = r2beta(m1,method='sgv'))
+(r2m2 = r2beta(m2,method='sgv'))
 
 ```
 
-3. The method introduced by Nakagawa and Schielzeth (2013) computes the marginal R squared described by Nakagawa and Schielzeth, which was later modified by Johnson (2014). Additionally, this package computes confidence limits and semi-partial R Squared for the marginal coefficient of determination. The r2glmm package only computes marginal R squared for the LMM and does not generalize the statistic to the GLMM.
+3. $R_{(m)}^2$, the proportion of variance explained by the fixed predictors. This statistic is a simplified version of $R_\beta^2$ that can be used as a substitute for models fitted to very large datasets.
 
 ```{r}
 
 # Compute the R2 statistic using Nakagawa and Schielzeth's approach.
-(r2nsj = r2beta(mermod, method = 'nsj', partial = TRUE))
+(r2nsj = r2beta(m1, method = 'nsj', partial = TRUE))
 
-# The MuMIn package computes the marginal R squared for fixed effects,
-# but does not compute confidence limits or semi-partial R squared
+# Check the result with MuMIn's r.squaredGLMM
+r2nsj_mum = MuMIn::r.squaredGLMM(m1)
 
-round(MuMIn::r.squaredGLMM(mermod),3)
-
-```
-
-
-The semi-partial R squared and confidence limits are two useful and exclusive features of the r2beta function which are used for covariate selection and interpretation of effect size (or multivariate association with the outcome). The plot function may be used to visualize these statistics. 
-
-```{r}
-
-plot(r2nsj)
+all.equal(r2nsj[1,'Rsq'],as.numeric(r2nsj_mum[1]), tolerance = 1e-3)
 
 ```
 
-The latest update allows the r2beta function to handle models fitted using the glmer function from the lme4 package. Additionally, using the data argument in the r2beta function allows users to assess goodness-of-fit for models that have a function (i.e. log(x) or cbind(events, trials)) in their model's formula.
+
+* $R^2$ for the Generalized Linear Mixed Model (GLMM)
+
+The r2glmm package can compute $R_\beta^2$ for models fitted using the glmer function from the lme4 package. Note that this method is experimental in R and values of $R_\beta^2$ sometimes exceed 1. We recommend using the SAS macro available at https://github.com/bcjaeger/R2FixedEffectsGLMM/blob/master/Glimmix_R2_V3.sas. $R_\Sigma^2$ is more stable and can be computed for models fitted using either the glmer function or the glmmPQL function from the MASS package; however, minor differences in model estimation can lead to slight variation in the values of $R_\Sigma^2$.
 
 ```{r}
 
 library(lattice)
- 
-gm1 <- glmer(cbind(incidence, size - incidence) ~ period + (1 | herd),
-             data = cbpp, family = binomial)
+library(MASS)
+cbpp$period = as.numeric(cbpp$period)
 
-r2beta(gm1, method = 'sgv', data = cbpp)
+# using glmer (based in lme4)
+gm1 <- glmer(
+  formula=cbind(incidence, size-incidence) ~ poly(period,2) + (1|herd),
+  data = cbpp, family = binomial)
 
-```
+# using glmmPQL (based on nlme)
+pql1 <- glmmPQL(
+  cbind(incidence, size-incidence) ~ poly(period,2), 
+  random = ~ 1|herd, family = binomial, data = cbpp
+)
 
-Longitudinal analyses sometimes have multiple valid approaches to model the passage of time. For example, the the toenail oncholysis data from Backer et al 1998 can be modelled with a continuous time covariate or a visit number. AIC and BIC favor the latter, but do not provide a direct measure of how well the favored model explains the data. 
+# Note minor differences in R^2_Sigma
+r2beta(model = gm1, method = 'sgv', data = cbpp)
+r2beta(model = pql1, method = 'sgv', data = cbpp)
 
-```{r}
-library("HSAUR2")
-head(toenail)
-
-gm2_time <- glmer(outcome~treatment*time+(1|patientID),
-                 data=toenail,
-                 family=binomial,nAGQ=20)
-
-gm2_visit <- glmer(outcome~treatment*visit+(1|patientID),
-                 data=toenail,
-                 family=binomial,nAGQ=20)
-
-AIC(gm2_time)
-AIC(gm2_visit)
-
-BIC(gm2_time)
-BIC(gm2_visit)
 
 ```
 
-The R Squared is in agreement with information criteria, but demonstrates that the favored model is substantially more well suited to the observed toenail data.
-
-```{r}
-
-r2beta(gm2_time, method = 'sgv')
-
-r2beta(gm2_visit, method = 'sgv')
-
-```
-
-The R squared statistic and semi-partial R squared may be used to measure effect size. Sometimes large samples can have significant estimates of effect size ($p < .05$), but the estimated values are practically trivial.  
-
-```{r}
-
-library(geepack)
-
-# The ohio dataset is a subset of a six-city study, 
-# longitudinal study of the health effects of air pollution.
-
-data(ohio)
-
-fit <- glmer(resp ~ age + smoke + age:smoke + (1|id),
-             data=ohio,family=binomial)
-
-summary(fit)
-
-```
-
-Here we see that the effect of age has a statistically significant p-value, but this may be due to the large sample size. R squared can help assess whether the effect is substantial or not. 
-
-```{r}
-
-r2beta(fit,method='sgv')
-
-```
 
 
 

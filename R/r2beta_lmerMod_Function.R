@@ -3,7 +3,8 @@
 #' @export
 
 
-r2beta.lmerMod <- function(model, partial=TRUE, method='sgv', data = NULL){
+r2beta.lmerMod <- function(model, partial=TRUE, method='sgv',
+                           data = NULL){
 
   if(is.null(data)) data = model@frame
 
@@ -13,6 +14,15 @@ r2beta.lmerMod <- function(model, partial=TRUE, method='sgv', data = NULL){
 
   # Get grouping information from the model
   clust.id = names(model@flist)[ length(model@flist) ]
+
+  if(!clust.id%in%names(data)){
+
+    ids = strsplit(clust.id, ':')[[1]]
+    data[[clust.id]] = interaction(data[[ids[1]]], data[[ids[2]]])
+    data = data = droplevels(data)
+
+  }
+
   obsperclust = as.numeric(table(data[ , clust.id ]))
   mobs = mean(obsperclust)
   nclusts = length(obsperclust)
@@ -20,81 +30,86 @@ r2beta.lmerMod <- function(model, partial=TRUE, method='sgv', data = NULL){
   # The Kenward Roger Approach
   if (toupper(method) == 'KR') {
 
-    beta = lme4::fixef(model)
-    p <- length(beta)
+    # Calculate F statistic using the approach of Kenward & Roger
 
-    # C matrix defines the Wald Test for Fixed Effects
-    C = list(); nms = c('Model', names(beta)[-1])
+    # random effects (re)
+    re = paste(sapply(lme4::findbars(stats::formula(model)), function(x){
+      x = as.character(x)
+      paste0('(',x[2], x[1], x[3],')')
+    }), collapse = '+')
 
-    # Define the model Wald statistic for all fixed effects
-    C[['Model']] = cbind(rep(0, p-1),diag(p-1))
+    null_model = stats::as.formula(paste0('. ~ 1 + ', re))
+
+    # model comparison (mc)
+    mc = pbkrtest::KRmodcomp(model, stats::update(model, null_model))$stats
+
+    ss = with(mc, ndf*Fstat/ddf)
+
+    R2 = data.frame(Effect='Model', 'F' = mc$Fstat,
+                    v1 = mc$ndf, v2 = mc$ddf,
+                    pval = mc$p.value,
+                    ncp = mc$ndf*mc$Fstat,
+                    Rsq = ss / (1+ss))
 
     # For partial R2 statistics:
-    if (partial == T){
+    if(partial == T){
 
-      # add the partial contrast matrices to C
-      for(i in 2:(p)) {
-        C[[nms[i]]] = make.partial.C(rows=p-1, cols = p, index = i)
-      }
+      suppressMessages(
+        expr = p <- afex::mixed(stats::formula(model),
+                                data=data,
+                                progress = FALSE)$anova_table
+      )
 
-    }
+      names(p)<-c('v1','v2','F','pval')
+      ss = p$v1*p$F/p$v2
 
-    R2 = data.frame()
-
-    for(c in 1:length(C)){
-
-      lab = names(C)[c]
-
-      cmat = C[[c]]
-
-      # Calculate F statistic using the approach of Kenward & Roger
-      mc = pbkrtest::KRmodcomp(model, cmat)$stat
-
-      # Compute the R2beta statistic for the full model
-      # Store results in a dataframe
-
-      r2 = data.frame(Effect = lab,
-                      F = mc$Fstat, v1 = mc$ndf, v2 = mc$ddf,
-                      ncp = mc$Fstat * mc$ndf,
-                      Rsq = with(mc, (ndf*Fstat / ddf) / (1 + ndf*Fstat/ddf) ) )
-
-      R2 = rbind(R2, r2)
-
+      R2 = rbind(R2,
+                 data.frame(Effect = rownames(p),
+                            'F' = p$F,
+                            v1 = p$v1, v2 = p$v2,
+                            pval = p$pval,
+                            ncp = p$v1*p$F,
+                            Rsq = ss / (1+ss)))
 
     }
 
-  }
-
-  # SGV and NSJ methods
-  else if (toupper(method) == 'SGV' | toupper(method) == 'NSJ'){
+  } else if (toupper(method) == 'SGV' | toupper(method) == 'NSJ'){
 
     beta = lme4::fixef(model)
     p <- length(beta)
 
+    if(p==1) stop('Model must have at least one fixed effect')
+
     # Get random effects design matrix
-    Z = as.matrix(lme4::getME(model, 'Z'))
+    Z = lme4::getME(model, 'Z')
 
     # Get variance component estimates
     s2e  = lme4::getME(model, 'sigma')^2
     lam  = lme4::getME(model, 'Lambda')
     lamt = lme4::getME(model, 'Lambdat')
 
-    G = s2e * as.matrix(lam %*% lamt)
+    G = s2e * (lam %*% lamt)
 
     # Compute estimated covariance matrix
-    SigHat = Z %*% ( G%*%t(Z) ) + s2e*diag(1/model@resp$weights)
+    SigHat = Z %*% ( G%*%Matrix::t(Z) )
+
+    # Add the residual component
+    Matrix::diag(SigHat) = Matrix::diag(SigHat) + s2e/model@resp$weights
 
     if(toupper(method)=='NSJ'){
 
       # NSJ approach takes the mean of the trace of the model covariance
-      SigHat = mean(diag(SigHat))
+      SigHat = mean(Matrix::diag(SigHat))
 
     }
 
     if(toupper(method)=='SGV'){
 
-      # SGV approach takes standardized determinant of the model covariance
-      SigHat=calc_sgv(nblocks=nclusts, blksizes=obsperclust, vmat=SigHat)
+      # SGV approach takes standardized
+      # determinant of the model covariance
+      SigHat=calc_sgv(nblocks=nclusts,
+                      blksizes=obsperclust,
+                      vmat=SigHat)
 
     }
 
@@ -102,10 +117,11 @@ r2beta.lmerMod <- function(model, partial=TRUE, method='sgv', data = NULL){
     C = list(); nms = c('Model', names(beta)[-1])
 
     # Define the model Wald statistic for all fixed effects
+
     C[['Model']] = cbind(rep(0, p-1),diag(p-1))
 
     # For partial R2 statistics:
-    if (partial == T){
+    if (partial == T & p>1){
 
       # add the partial contrast matrices to C
       for(i in 2:(p)) {

@@ -107,8 +107,20 @@ calc_sgv <- function(nblocks=NULL, blksizes = NULL, vmat){
 
   # Back transform from log scale after taking mean of log sgvs
   # This gives the geometric mean of the sgv of the blocks
+  # One numerical complication is non-finite sgv values.
 
-  SGV = exp(mean(unlist(sgv)))
+  sgvec = unlist(sgv)
+  keep = is.finite(sgvec)
+
+  if(length(sgvec) - sum(keep) > 0){
+    warning("Some SGV estimates are non-finite and have been adjusted")
+
+    sgvec[!keep] = max(sgvec[keep])
+
+  }
+
+
+  SGV = exp( mean(sgvec) )
 
   return(as.numeric(SGV))
 
@@ -150,10 +162,13 @@ pqlmer <- function(formula, family, data, niter = 40, verbose = T){
       family <- family()
     if (is.null(family$family)) {
       print(family)
-      stop("'family' not recognized")
+      stop("family' not recognized")
     }
 
   fit0 = stats::glm(lme4::nobars(formula), family = family, data = data)
+
+  # Remove missing values (glm does this automatically)
+  # data = data[!is.na(data[[as.character(fit0$formula[[2]])]]),]
 
   eta <- fit0$linear.predictors
   wz=NULL

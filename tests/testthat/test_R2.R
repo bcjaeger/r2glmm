@@ -11,12 +11,12 @@ data(Orthodont)
 mermod = lmer(distance ~ age*Sex + (1|Subject), data = Orthodont)
 lmemod = lme(distance ~ age*Sex, random = ~1|Subject, data = Orthodont)
 
-lme.r2 = r2beta(model = lmemod, method = 'sgv', partial = FALSE)
-mer.r2 = r2beta(model = mermod, method = 'sgv', partial = FALSE)
+lme.r2 = r2beta(model = lmemod, method = 'sgv', partial = T)
+mer.r2 = r2beta(model = mermod, method = 'sgv', partial = T)
 
 r2.diff = lme.r2$Rsq - mer.r2$Rsq
 
 test_that("r2beta works", {
-  expect_true(r2.diff < 0.02)
+  expect_true(all(r2.diff<0.01))
 })
 

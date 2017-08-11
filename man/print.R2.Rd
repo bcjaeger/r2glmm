@@ -4,9 +4,13 @@
 \alias{print.R2}
 \title{Print the contents of an R2 object}
 \usage{
-\method{print}{R2}(r2)
+\method{print}{R2}(x, ...)
+}
+\arguments{
+\item{x}{an object of class R2}
+
+\item{...}{other arguments passed to the print function.}
 }
 \description{
 Print the contents of an R2 object
 }
-

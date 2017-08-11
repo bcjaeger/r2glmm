@@ -2,7 +2,7 @@
 % Please edit documentation in R/r2beta_Function.R
 \name{r2beta}
 \alias{r2beta}
-\title{r2beta}
+\title{r2beta Compute R Squared for Mixed Models}
 \usage{
 r2beta(model, partial = TRUE, method = "sgv", data = NULL)
 }
@@ -98,4 +98,3 @@ Nakagawa, Shinichi, and Holger Schielzeth. "A general and simple method for
 Jaeger, Byron C., et al., "An R Squared Statistic for Fixed Effects in the
    Generalized Linear Mixed Model." Journal of Applied Statistics (2016).
 }
-

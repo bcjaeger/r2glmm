@@ -51,4 +51,3 @@ r2beta(mod.pql)
 r2beta(linfit)
 
 }
-
