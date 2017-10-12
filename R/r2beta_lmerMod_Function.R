@@ -7,6 +7,8 @@ r2beta.lmerMod <- function(model, partial=TRUE, method='sgv',
                            data = NULL){
 
   if(is.null(data)) data = model@frame
+  if(is.null(data) & partial)
+    stop('Please specify the dataframe used to fit the model.')
 
   # Get model matrices
   X = lme4::getME(model, 'X')
@@ -123,9 +125,17 @@ r2beta.lmerMod <- function(model, partial=TRUE, method='sgv',
     # For partial R2 statistics:
     if (partial == T & p>1){
 
+      asgn = attr(X, 'assign')
+      nmrs = 1:length(asgn)
+      assign = split(nmrs, asgn)
+      nTerms = length(assign)
+      labs = attr(stats::terms(model), 'term.labels')
+      nms = c('Model', labs)
+      names(assign) = c('(Intercept)',labs)
+
       # add the partial contrast matrices to C
-      for(i in 2:(p)) {
-        C[[nms[i]]] = make.partial.C(rows=p-1, cols = p, index = i)
+      for(i in 2:(nTerms)) {
+        C[[nms[i]]] = make.partial.C(rows=p-1, cols = p, index = assign[[i]])
       }
 
     }

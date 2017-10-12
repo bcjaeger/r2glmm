@@ -32,24 +32,27 @@ r2beta.glmmPQL <- function(model, partial=TRUE, method='sgv',
   SigHat = calc_sgv(nblocks = nclusts, vmat = mlist)
 
   # C matrix defines the Wald Test for Fixed Effects
-  C = list(); nms = c('Model', names(beta)[-1])
+  C = list()
+  assign <- attr(model$fixDF, "assign")
+  nTerms <- length(assign)
+  nms = c('Model', names(assign)[-1])
 
   # Define the model Wald statistic for all fixed effects
-  C[['Model']] = cbind(rep(0, p-1),diag(p-1))
+  C[['Model']] = cbind(rep(0, p-1), diag(p-1))
 
   # For partial R2 statistics:
   if (partial == T){
 
     # add the partial contrast matrices to C
-    for(i in 2:(p)) {
-      C[[nms[i]]] = make.partial.C(rows=p-1, cols = p, index = i)
+    for(i in 2:(nTerms)) {
+      C[[nms[i]]] = make.partial.C(rows=p-1, cols = p, index = assign[[i]])
     }
 
   }
 
   # Compute the specified R2
-  r2=lapply(C, FUN=cmp_R2, x=X, SigHat=SigHat, beta=beta, method=method,
-            obsperclust=obsperclust, nclusts=nclusts)
+  r2=lapply(C, FUN=cmp_R2, x=X, SigHat=SigHat, beta=beta,
+            method=method, obsperclust=obsperclust, nclusts=nclusts)
 
   # initialize a dataframe to hold results
   R2 = data.frame(Effect = names(r2))

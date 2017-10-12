@@ -72,21 +72,16 @@ cmp_R2 = function(c, x, SigHat, beta, method,
 
   }
 
-  if(rank.c>1){
+  wald = suppressWarnings(try(as.numeric(
+    t(c %*% beta) %*% Matrix::solve(denom) %*% c%*%beta / rank.c),
+    silent = TRUE
+  ))
 
-    wald = try(as.numeric(
-      t(c %*% beta) %*% Matrix::solve(denom) %*% c%*%beta / rank.c),
-      silent = TRUE
-    )
-
-  } else {
-
+  if(class(wald)=='try-error'){
     wald = try(as.numeric(
       t(c %*% beta) %*% MASS::ginv(as.matrix(denom)) %*% c%*%beta / rank.c)
     )
-
   }
-
 
   if(class(wald)=='try-error')
     stop('Could not invert adjusted covariance of regression estimates')
