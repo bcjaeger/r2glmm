@@ -4,8 +4,8 @@
 \alias{plot.R2}
 \title{Visualize standardized effect sizes and model R squared}
 \usage{
-\method{plot}{R2}(x, y = NULL, txtsize = 10, maxcov = 3, r2labs = NULL,
-  r2mthd = "sgv", cor = TRUE, ...)
+\method{plot}{R2}(x, y = NULL, txtsize = 10, maxcov = 3,
+  r2labs = NULL, r2mthd = "sgv", cor = TRUE, ...)
 }
 \arguments{
 \item{x}{An R2 object from the r2beta function.}

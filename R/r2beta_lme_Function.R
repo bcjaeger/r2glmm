@@ -52,17 +52,20 @@ r2beta.lme <- function(model, partial=TRUE, method='sgv',
     }
 
     # C matrix defines the Wald Test for Fixed Effects
-    C = list(); nms = c('Model', names(beta)[-1])
+    C = list()
+    assign <- attr(model$fixDF, "assign")
+    nTerms <- length(assign)
+    nms = c('Model', names(assign)[-1])
 
     # Define the model Wald statistic for all fixed effects
-    C[['Model']] = cbind(rep(0, p-1),diag(p-1))
+    C[['Model']] = cbind(rep(0, p-1), diag(p-1))
 
     # For partial R2 statistics:
     if (partial == T){
 
       # add the partial contrast matrices to C
-      for(i in 2:(p)) {
-        C[[nms[i]]] = make.partial.C(rows=p-1, cols = p, index = i)
+      for(i in 2:(nTerms)) {
+        C[[nms[i]]] = make.partial.C(rows=p-1, cols = p, index = assign[[i]])
       }
 
     }
