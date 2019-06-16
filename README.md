@@ -1,7 +1,15 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
+<<<<<<< HEAD
 # r2glmm
+=======
+This package computes model and semi partial *R*<sup>2</sup> with confidence limits for the linear and generalized linear mixed model (LMM and GLMM). The *R*<sup>2</sup> measure from L. J. Edwards et al. (2008) is extended to the GLMM using penalized quasi-likelihood (PQL) estimation (see Jaeger et al. (2016)).
+
+-   Changes: Version 0.1.3
+
+1.  Updated semi-partial computation. Categorical variables and polynomial regression variables are now grouped.
+>>>>>>> 288bedec45ec09fab8eca56855c352758441f31f
 
 This package computes model and semi partial \(R^2\) with confidence
 limits for the linear and generalized linear mixed model (LMM and GLMM).
@@ -22,8 +30,14 @@ using penalized quasi-likelihood (PQL) estimation (see Jaeger et al.
 
 <!-- end list -->
 
+<<<<<<< HEAD
 1.  Optimized computation of matrix inverses and cross-products in order
     to decrease computation time.
+=======
+1.  *R*<sub>*β*</sub><sup>2</sup>, a standardized measure of multivariate association between the fixed predictors and the observed outcome. This method was introduced by L. J. Edwards et al. (2008).
+2.  *R*<sub>*Σ*</sub><sup>2</sup>, the proportion of generalized variance explained by the fixed predictors. This method was introduced by Jaeger et al. (2016)
+3.  *R*<sub>(*m*)</sub><sup>2</sup>, the proportion of variance explained by the fixed predictors. This method was introduced by Nakagawa and Schielzeth (2013) and later modified by Johnson (2014).
+>>>>>>> 288bedec45ec09fab8eca56855c352758441f31f
 
 <!-- end list -->
 
@@ -156,6 +170,7 @@ lme2 = lme(distance ~ age*Sex, ~1|Subject, data=Orthodont,
 
 # Compare the models
 (r2m1 = r2beta(model=lme1,method='sgv',partial=FALSE))
+<<<<<<< HEAD
 #> Warning in model.matrix.default(~b$groups[[n.levels - i + 1]] - 1,
 #> contrasts.arg = c("contr.treatment", : non-list contrasts argument ignored
 #>   Effect   Rsq upper.CL lower.CL
@@ -163,6 +178,11 @@ lme2 = lme(distance ~ age*Sex, ~1|Subject, data=Orthodont,
 (r2m2 = r2beta(model=lme2,method='sgv',partial=FALSE))
 #> Warning in model.matrix.default(~b$groups[[n.levels - i + 1]] - 1,
 #> contrasts.arg = c("contr.treatment", : non-list contrasts argument ignored
+=======
+#>   Effect   Rsq upper.CL lower.CL
+#> 1  Model 0.559    0.669    0.447
+(r2m2 = r2beta(model=lme2,method='sgv',partial=FALSE))
+>>>>>>> 288bedec45ec09fab8eca56855c352758441f31f
 #>   Effect   Rsq upper.CL lower.CL
 #> 1  Model 0.603    0.703    0.498
 ```
@@ -178,6 +198,7 @@ lme2 = lme(distance ~ age*Sex, ~1|Subject, data=Orthodont,
 
 # Compute the R2 statistic using Nakagawa and Schielzeth's approach.
 (r2nsj = r2beta(mer1, method = 'nsj', partial = TRUE))
+<<<<<<< HEAD
 #>               Effect   Rsq upper.CL lower.CL
 #> 1              Model 0.410    0.551    0.305
 #> 4           bs(age)3 0.231    0.369    0.111
@@ -195,6 +216,16 @@ r2nsj_mum = MuMIn::r.squaredGLMM(mer1)
 #>   predict.merMod lme4
 #> Warning: 'r.squaredGLMM' now calculates a revised statistic. See the help
 #> page.
+=======
+#>        Effect   Rsq upper.CL lower.CL
+#> 1       Model 0.410    0.551    0.305
+#> 2     bs(age) 0.263    0.409    0.149
+#> 3         Sex 0.032    0.126    0.000
+#> 4 bs(age):Sex 0.024    0.134    0.005
+
+# Check the result with MuMIn's r.squaredGLMM
+r2nsj_mum = MuMIn::r.squaredGLMM(mer1)
+>>>>>>> 288bedec45ec09fab8eca56855c352758441f31f
 
 all.equal(r2nsj[1,'Rsq'],as.numeric(r2nsj_mum[1]), tolerance = 1e-3)
 #> [1] TRUE
@@ -235,6 +266,7 @@ pql1 <- glmmPQL(
 
 # Note minor differences in R^2_Sigma
 r2beta(model = gm1, method = 'sgv', data = cbpp)
+<<<<<<< HEAD
 #>        Effect   Rsq upper.CL lower.CL
 #> 1       Model 0.240    0.476    0.091
 #> 4 bs(period)3 0.230    0.447    0.059
@@ -287,3 +319,24 @@ Method for Obtaining R2 from Generalized Linear Mixed-Effects Models.”
 </div>
 
 </div>
+=======
+#>       Effect  Rsq upper.CL lower.CL
+#> 1      Model 0.24    0.476    0.091
+#> 2 bs(period) 0.24    0.476    0.091
+r2beta(model = pql1, method = 'sgv', data = cbpp)
+#>       Effect  Rsq upper.CL lower.CL
+#> 1      Model 0.22    0.458    0.077
+#> 2 bs(period) 0.22    0.458    0.077
+```
+
+References
+==========
+
+Edwards, Lloyd J, Keith E Muller, Russell D Wolfinger, Bahjat F Qaqish, and Oliver Schabenberger. 2008. “An R2 Statistic for Fixed Effects in the Linear Mixed Model.” *Statistics in Medicine* 27 (29). Wiley Online Library: 6137–57.
+
+Jaeger, Byron C., Lloyd J. Edwards, Kalyan Das, and Pranab K. Sen. 2016. “An *R*<sup>2</sup> statistic for fixed effects in the generalized linear mixed model.” *Journal of Applied Statistics* 0 (0): 1–20. doi:[10.1080/02664763.2016.1193725](https://doi.org/10.1080/02664763.2016.1193725).
+
+Johnson, Paul CD. 2014. “Extension of Nakagawa & Schielzeth’s R2glmm to Random Slopes Models.” *Methods in Ecology and Evolution* 5 (9). Wiley Online Library: 944–46.
+
+Nakagawa, Shinichi, and Holger Schielzeth. 2013. “A General and Simple Method for Obtaining R2 from Generalized Linear Mixed-Effects Models.” *Methods in Ecology and Evolution* 4 (2). Wiley Online Library: 133–42.
+>>>>>>> 288bedec45ec09fab8eca56855c352758441f31f
