@@ -4,8 +4,16 @@
 \alias{r2dt}
 \title{R Squared Difference Test (R2DT). Test for a statistically significant difference in generalized explained variance between two candidate models.}
 \usage{
-r2dt(x, y = NULL, cor = TRUE, fancy = FALSE, onesided = TRUE,
-  clim = 95, nsims = 2000, mu = NULL)
+r2dt(
+  x,
+  y = NULL,
+  cor = TRUE,
+  fancy = FALSE,
+  onesided = TRUE,
+  clim = 95,
+  nsims = 2000,
+  mu = NULL
+)
 }
 \arguments{
 \item{x}{An R2 object from the r2beta function.}

@@ -20,3 +20,33 @@ test_that("r2beta works", {
   expect_true(all(r2.diff<0.01))
 })
 
+
+# Example from documentation of `r2beta`
+
+dis = data.frame(discoveries)
+dis$year = 1:nrow(dis)
+
+glmod1 = glm(
+  discoveries ~ year + I(year^2),
+  family = 'poisson',
+  data = dis
+)
+
+glmod2 = glm(
+  as.formula("discoveries ~ year + I(year^2)"),
+  family = 'poisson',
+  data = dis
+)
+
+glmod3 = glm(
+  "discoveries ~ year + I(year^2)",
+  family = 'poisson',
+  data = dis
+)
+
+test_that("r2beta allows programmatic formulas", {
+  expect_equal(r2glmm::r2beta(glmod1), r2glmm::r2beta(glmod2))
+  expect_equal(r2glmm::r2beta(glmod1), r2glmm::r2beta(glmod3))
+})
+
+

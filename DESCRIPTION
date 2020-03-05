@@ -40,6 +40,6 @@ Suggests:
     testthat
 License: GPL-2
 LazyData: TRUE
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
 URL: https://github.com/bcjaeger/r2glmm
 BugReports: https://github.com/bcjaeger/r2glmm/issues

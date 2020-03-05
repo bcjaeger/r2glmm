@@ -156,13 +156,9 @@ lme2 = lme(distance ~ age*Sex, ~1|Subject, data=Orthodont,
 
 # Compare the models
 (r2m1 = r2beta(model=lme1,method='sgv',partial=FALSE))
-#> Warning in model.matrix.default(~b$groups[[n.levels - i + 1]] - 1,
-#> contrasts.arg = c("contr.treatment", : non-list contrasts argument ignored
 #>   Effect   Rsq upper.CL lower.CL
 #> 1  Model 0.559    0.669    0.447
 (r2m2 = r2beta(model=lme2,method='sgv',partial=FALSE))
-#> Warning in model.matrix.default(~b$groups[[n.levels - i + 1]] - 1,
-#> contrasts.arg = c("contr.treatment", : non-list contrasts argument ignored
 #>   Effect   Rsq upper.CL lower.CL
 #> 1  Model 0.603    0.703    0.498
 ```
@@ -186,11 +182,7 @@ lme2 = lme(distance ~ age*Sex, ~1|Subject, data=Orthodont,
 
 # Check the result with MuMIn's r.squaredGLMM
 r2nsj_mum = MuMIn::r.squaredGLMM(mer1)
-#> Registered S3 method overwritten by 'MuMIn':
-#>   method         from
-#>   predict.merMod lme4
-#> Warning: 'r.squaredGLMM' now calculates a revised statistic. See the help
-#> page.
+#> Warning: 'r.squaredGLMM' now calculates a revised statistic. See the help page.
 
 all.equal(r2nsj[1,'Rsq'],as.numeric(r2nsj_mum[1]), tolerance = 1e-3)
 #> [1] TRUE
@@ -235,8 +227,6 @@ r2beta(model = gm1, method = 'sgv', data = cbpp)
 #> 1      Model 0.24    0.476    0.091
 #> 2 bs(period) 0.24    0.476    0.091
 r2beta(model = pql1, method = 'sgv', data = cbpp)
-#> Warning in model.matrix.default(~b$groups[[n.levels - i + 1]] - 1,
-#> contrasts.arg = c("contr.treatment", : non-list contrasts argument ignored
 #>       Effect  Rsq upper.CL lower.CL
 #> 1      Model 0.22    0.458    0.077
 #> 2 bs(period) 0.22    0.458    0.077

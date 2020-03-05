@@ -52,7 +52,8 @@ glmPQL <- function(glm.mod, niter = 20, data = NULL){
   }
 
   mod.call <- fit0$call
-  mod.form=mod.call[['formula']]
+  mod.form = stats::formula(fit0)
+  #mod.form = mod.call[['formula']]
   w <- fit0$prior.weights
   off <- mod.call[['offset']]
   if(is.null(off)) off = 0
