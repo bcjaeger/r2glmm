@@ -2,7 +2,7 @@ Package: r2glmm
 Type: Package
 Title: Computes R Squared for Mixed (Multilevel) Models
 Date: 2017-08-04
-Version: 0.1.2
+Version: 0.1.2.9001
 Authors@R: person("Byron", "Jaeger", email = "byron.jaeger@gmail.com", role = c("aut", "cre"))
 Description: The model R squared and semi-partial R squared for the linear and
     generalized linear mixed model (LMM and GLMM) are computed with confidence
