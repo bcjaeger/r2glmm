@@ -46,7 +46,7 @@ calc_sgv <- function(nblocks=NULL, blksizes = NULL, vmat){
   # lme allows the user to input a list of matrices directly
   # if this is done, computation-time is considerably lessened
 
-  if(class(vmat) != 'list'){
+  if(!inherits(vmat, 'list')){
 
     # initialize a matrix list and a starting point
 
@@ -99,7 +99,7 @@ calc_sgv <- function(nblocks=NULL, blksizes = NULL, vmat){
 
   sgv = try(lapply(mlist, function(mat){ log(det(mat)) / nrow(mat)}))
 
-  if(class(sgv)=="try-error"){
+  if(inherits(sgv, 'try-error')){
 
     stop('SGV is non-finite. Consider rescaling outcomes and Predictors')
 
@@ -136,7 +136,7 @@ calc_sgv <- function(nblocks=NULL, blksizes = NULL, vmat){
 #' @param niter Maximum number of iterations to perform.
 #' @param verbose if TRUE, iterations are printed to console.
 #' @return A pseudo linear mixed model of class "lme" .
-#' @seealso \code{\link{glmmPQL}}
+#' @seealso \code{\link[MASS]{glmmPQL}}
 #' @examples
 #' # Compare lmer PQL with lme PQL
 #'

@@ -5,7 +5,7 @@
 #' @description Computes coefficient of determination (R squared) from
 #' edwards et al., 2008 and the generalized R squared from Jaeger et al., 2016.
 #' Currently implemented for linear mixed models with
-#' \code{\link{lmer}} and \code{\link{lme}} objects. For
+#' \code{\link[lme4]{lmer}} and \code{\link[nlme]{lme}} objects. For
 #' generalized linear mixed models, only \code{\link{glmmPQL}} are supported.
 #'
 #' @param model a fitted mermod, lme, or glmmPQL model.
@@ -21,7 +21,7 @@
 #'            This option is only available for \code{\link{lme}} models.
 #'            if \code{method} = 'nsj',then the Nakagawa and Schielzeth approach
 #'            is applied. This option is available for
-#'            \code{\link{lmer}} and \code{\link{lme}} objects.
+#'            \code{\link[lme4]{lmer}} and \code{\link[nlme]{lme}} objects.
 #'            if \code{method} = 'lm', the classical R squared from the
 #'            linear model is computed. This method should only be used
 #'            on glm and lm object.

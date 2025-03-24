@@ -77,13 +77,13 @@ cmp_R2 = function(c, x, SigHat, beta, method,
     silent = TRUE
   ))
 
-  if(class(wald)=='try-error'){
+  if(inherits(wald, 'try-error')){
     wald = try(as.numeric(
       t(c %*% beta) %*% MASS::ginv(as.matrix(denom)) %*% c%*%beta / rank.c)
     )
   }
 
-  if(class(wald)=='try-error')
+  if(inherits(wald, 'try-error'))
     stop('Could not invert adjusted covariance of regression estimates')
 
   ndf = rank.c

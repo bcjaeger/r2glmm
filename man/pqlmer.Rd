@@ -40,5 +40,5 @@ summary(lmePQL)
 summary(merPQL)
 }
 \seealso{
-\code{\link{glmmPQL}}
+\code{\link[MASS]{glmmPQL}}
 }
