@@ -3,3 +3,4 @@
 ^README\.Rmd$
 ^README-.*\.png$
 ^bib\.bib$
+^\.github

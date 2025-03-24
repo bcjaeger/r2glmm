@@ -17,7 +17,7 @@ if \code{method} = 'sgv' then the standardized generalized variance
 approach is applied. This method is recommended for covariance model
 selection.
 if \code{method} = 'kr', then the Kenward Roger approach is applied.
-This option is only available for \code{\link{lme}} models.
+This option is only available for \code{\link[nlme]{lme}} models.
 if \code{method} = 'nsj',then the Nakagawa and Schielzeth approach
 is applied. This option is available for
 \code{\link[lme4]{lmer}} and \code{\link[nlme]{lme}} objects.
@@ -32,7 +32,7 @@ offset, log, cbind(sucesses, trials), etc.}
 \value{
 A dataframe containing the model F statistic, numerator
   and denominator degrees of freedom, non-centrality parameter,
-  and R squared statistic with 95% confidence limits.
+  and R squared statistic with 95 percent confidence limits.
   If partial = TRUE, then the dataframe also contains partial R
   squared statistics for all fixed effects in the model.
 }
@@ -41,7 +41,7 @@ Computes coefficient of determination (R squared) from
 edwards et al., 2008 and the generalized R squared from Jaeger et al., 2016.
 Currently implemented for linear mixed models with
 \code{\link[lme4]{lmer}} and \code{\link[nlme]{lme}} objects. For
-generalized linear mixed models, only \code{\link{glmmPQL}} are supported.
+generalized linear mixed models, only \code{\link[MASS]{glmmPQL}} are supported.
 }
 \examples{
 library(nlme)
