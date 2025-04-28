@@ -136,6 +136,7 @@ calc_sgv <- function(nblocks=NULL, blksizes = NULL, vmat){
 #' @param niter Maximum number of iterations to perform.
 #' @param verbose if TRUE, iterations are printed to console.
 #' @return A pseudo linear mixed model of class "lme" .
+#' @seealso \code{\link[MASS]{glmmPQL}}
 #' @examples
 #' # Compare lmer PQL with lme PQL
 #'

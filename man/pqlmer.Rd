@@ -39,3 +39,6 @@ merPQL= pqlmer(y ~ trt + week + I(week > 2) + (1 | ID),
 summary(lmePQL)
 summary(merPQL)
 }
+\seealso{
+\code{\link[MASS]{glmmPQL}}
+}
